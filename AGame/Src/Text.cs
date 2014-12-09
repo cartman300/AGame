@@ -17,18 +17,18 @@ using AGame.Utils;
 using AGame.Src.OGL;
 
 namespace AGame.Src {
-	static class GraphicsExtensions {
-		public static void SetGLQuality(this Graphics Gfx) {
-			Gfx.SmoothingMode = SmoothingMode.None;
-			Gfx.TextRenderingHint = TextRenderingHint.AntiAlias;
-			Gfx.InterpolationMode = InterpolationMode.HighQualityBicubic;
-			Gfx.PixelOffsetMode = PixelOffsetMode.HighQuality;
-			Gfx.CompositingMode = CompositingMode.SourceOver;
-			Gfx.CompositingQuality = CompositingQuality.HighQuality;
-		}
-	}
-
 	class Text {
+		[Flags]
+		public enum Alignment {
+			Top = 1 << 1,
+			Bottom = 1 << 2,
+			Left = 1 << 3,
+			Right = 1 << 4,
+
+			CenterX = Left | Right,
+			CenterY = Top | Bottom
+		}
+
 		static PrivateFontCollection PFC = new PrivateFontCollection();
 
 		public static Font LoadFont(string Pth, string Name, float Size) {
@@ -37,108 +37,63 @@ namespace AGame.Src {
 			return new Font(FF, Size);
 		}
 
-		bool Dirty;
 		Font F;
-		Bitmap TBmp;
-		Texture T;
+		public GraphicsTexture Tex;
 
-		public VAO StrVAO;
-		public VBO StrPos;
-		public VBO StrUV;
+		public Color ForeColor;
+		public Color BackColor;
+		public bool FillBackground;
+
+		Quad2D TextQuad;
 
 		public Text(Font Fnt, int W, int H) {
-			StrVAO = new VAO(PrimitiveType.Quads);
-			StrVAO.Bind();
-
-			float Sz = 1.0f;
-			StrPos = new VBO(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw);
-			StrPos.Data(new Vector2[] {
-				new Vector2(-Sz, Sz),
-				new Vector2(Sz, Sz),
-				new Vector2(Sz, -Sz),
-				new Vector2(-Sz, -Sz),
-			});
-
-			StrUV = new VBO(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw);
-			StrUV.Data(new Vector2[] {
-				new Vector2(0.0f, 0.0f),
-				new Vector2(1.0f, 0.0f),
-				new Vector2(1.0f, 1.0f),
-				new Vector2(0.0f, 1.0f),
-			});
-
 			F = Fnt;
-
-			TBmp = new Bitmap(W, H);
-		}
-
-		void CreateTexture(Bitmap Bmp) {
-			if (T != null)
-				T.Delete();
-			T = new Texture(TextureTarget.Texture2D);
-			T.BindTo(TextureUnit.Texture0);
-			T.Wrapping(Texture.Wrap.X, Texture.WrapMode.ClampToEdge);
-			T.Wrapping(Texture.Wrap.Y, Texture.WrapMode.ClampToEdge);
-			T.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.Linear);
-			T.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.Linear);
-			T.Load(Bmp);
-		}
-
-		public void UpdateGraphics(Action<Graphics> A) {
-			using (Graphics Gfx = Graphics.FromImage(TBmp)) {
-				A(Gfx);
-				Gfx.Flush(FlushIntention.Sync);
-			}
-			Dirty = true;
+			ForeColor = Color.White;
+			BackColor = Color.Black;
+			FillBackground = false;
+			Tex = new GraphicsTexture(W, H);
+			TextQuad = new Quad2D(new Vector2(-1, -1), new Vector2(2, 2));
 		}
 
 		public Vector2 MeasureString(string Str) {
-			using (Graphics Gfx = Graphics.FromImage(TBmp)) {
-				SizeF Sz = Gfx.MeasureString(Str, F);
-				return new Vector2(Sz.Width, Sz.Height);
-			}	
+			return Tex.MeasureString(Str, F);
 		}
 
-		public void Print(string Str, Color Clr, Vector2 Pos) {
-			UpdateGraphics((Gfx) => {
-				Brush ClrBrush = new SolidBrush(Clr);
-				Gfx.SetGLQuality();
-				Gfx.DrawString(Str, F, ClrBrush, Pos.X, Pos.Y);
-			});
+		public void Print(string Str, Vector2 Pos) {
+			if (FillBackground)
+				Tex.FillRectangle(BackColor, Pos, Tex.MeasureString(Str, F));
+			Tex.DrawString(Str, F, ForeColor, Pos);
 		}
 
-		public void DrawBitmap(Bitmap Bmp) {
-			TBmp = Bmp;
-			Dirty = true;
+		public void Print(string Str) {
+			Print(Str, Vector2.Zero);
 		}
 
-		public void Print(string Str, Color Clr) {
-			Print(Str, Clr, Vector2.Zero);
-		}
+		public void Print(string Str, Alignment A) {
+			float W = Tex.W;
+			float H = Tex.H;
+			Vector2 Sz = MeasureString(Str);
+			Vector2 Pos = new Vector2(W / 2, H / 2);
 
-		public void PrintBG(string Str, Color Clr, Color BGClr, Vector2 Pos) {
-			UpdateGraphics((Gfx) => {
+			if (A.HasFlag(Alignment.Top) && !A.HasFlag(Alignment.Bottom))
+				Pos.Y = 0;
+			if (A.HasFlag(Alignment.Bottom) && !A.HasFlag(Alignment.Top))
+				Pos.Y = H - Sz.Y;
+			if (A.HasFlag(Alignment.Left) && !A.HasFlag(Alignment.Right))
+				Pos.X = 0;
+			if (A.HasFlag(Alignment.Right) && !A.HasFlag(Alignment.Left))
+				Pos.X = W - Sz.X;
 
-			});
-		}
-
-		public void PrintBG(string Str, Color Clr, Color BGClr) {
-			PrintBG(Str, Clr, BGClr, Vector2.Zero);
+			Print(Str, Pos);
 		}
 
 		public void Clear(Color Clr) {
-			UpdateGraphics((Gfx) => Gfx.Clear(Clr));
+			Tex.Clear(Clr);
 		}
 
 		public void Render() {
-			if (Dirty) {
-				Dirty = false;
-				CreateTexture(TBmp);
-			}
-
-			StrVAO.Bind();
-			T.BindTo(TextureUnit.Texture0);
-			StrVAO.DrawArrays(0, 4);
+			Tex.Bind();
+			TextQuad.Render();
 		}
 	}
 }

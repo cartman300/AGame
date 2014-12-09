@@ -13,6 +13,7 @@ using OpenTK.Input;
 
 using AGame.Utils;
 using AGame.Src.OGL;
+using AGame.Src;
 
 namespace AGame.Src {
 	class Game : GameWindow {
@@ -43,6 +44,7 @@ namespace AGame.Src {
 		protected override void OnLoad(EventArgs e) {
 			base.OnLoad(e);
 			Engine.InitGL();
+			AConsole.Init();
 			Engine.ActiveState = new States.Menu();
 		}
 

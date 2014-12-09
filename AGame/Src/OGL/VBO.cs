@@ -35,6 +35,7 @@ namespace AGame.Src.OGL {
 
 		public void VertexAttribPointer(int Idx, int Size, int Stride = 0, int Offset = 0, VAPT PtrType = VAPT.Float) {
 			Bind();
+			GL.EnableVertexAttribArray(Idx);
 			GL.VertexAttribPointer(Idx, Size, PtrType, false, Stride, Offset);
 		}
 

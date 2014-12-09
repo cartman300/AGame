@@ -20,26 +20,21 @@ namespace AGame.Src.States {
 	class Menu : State {
 		Text Txt;
 
-		[DllImport("user32.dll", SetLastError = true)]
-		[return: MarshalAs(UnmanagedType.Bool)]
-		static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
-
 		public Menu() {
 			Font TxtFont = Text.LoadFont("Data/Fonts/FreeSans.ttf", "FreeSans", 12);
 
 			Txt = new Text(TxtFont, Game.AGame.Width, Game.AGame.Height);
-			int posLoc = Game.Engine.Generic2D.GetAttribLocation("pos");
-			GL.EnableVertexAttribArray(posLoc);
-			Txt.StrPos.VertexAttribPointer(posLoc, 2);
+			Txt.FillBackground = true;
 
-			int uvLoc = Game.Engine.Generic2D.GetAttribLocation("uv");
-			GL.EnableVertexAttribArray(uvLoc);
-			Txt.StrUV.VertexAttribPointer(uvLoc, 2);
+			for (int i = 0; i < 20; i++)
+				AConsole.Print("Hello World #{0}!", i);
 		}
 
 		public override void RenderGUI(float T) {
-			Txt.Clear(Color.Transparent);
-			Txt.Print("FPS " + Math.Round(1.0f / T, 1).ToString(), Color.White);
+			AConsole.Render();
+
+			Txt.Tex.FillRectangle(Txt.BackColor, Vector2.Zero, Txt.MeasureString("FPS ####"));
+			Txt.Print("FPS " + Math.Round(1.0f / T, 1).ToString());
 			Txt.Render();
 		}
 	}

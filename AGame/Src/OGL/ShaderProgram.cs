@@ -11,6 +11,18 @@ using VAPT = OpenTK.Graphics.OpenGL4.VertexAttribPointerType;
 
 namespace AGame.Src.OGL {
 	class ShaderProgram : GLObject {
+		public int PosAttrib {
+			get {
+				return GetAttribLocation("pos");
+			}
+		}
+
+		public int UVAttrib {
+			get {
+				return GetAttribLocation("uv");
+			}
+		}
+
 		public ShaderProgram(Shader[] Shaders) {
 			ID = GL.CreateProgram();
 

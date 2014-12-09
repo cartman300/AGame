@@ -56,9 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Src\AConsole.cs" />
     <Compile Include="Src\Engine.cs" />
     <Compile Include="Src\Game.cs" />
     <Compile Include="Src\OGL\GLObject.cs" />
+    <Compile Include="Src\OGL\GraphicsTexture.cs" />
+    <Compile Include="Src\OGL\Quad.cs" />
     <Compile Include="Src\OGL\Shader.cs" />
     <Compile Include="Src\OGL\ShaderProgram.cs" />
     <Compile Include="Src\OGL\Texture.cs" />
