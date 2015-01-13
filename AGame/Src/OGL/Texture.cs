@@ -78,6 +78,18 @@ namespace AGame.Src.OGL {
 			this.Target = Target;
 		}
 
+		public static Texture FromFile(string Path) {
+			Texture Atlas = new Texture(TextureTarget.Texture2D);
+			Atlas.BindTo(TextureUnit.Texture0);
+			Atlas.Wrapping(Texture.Wrap.X, Texture.WrapMode.ClampToEdge);
+			Atlas.Wrapping(Texture.Wrap.Y, Texture.WrapMode.ClampToEdge);
+			Atlas.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.Linear);
+			Atlas.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.Linear);
+			Atlas.Load(Bitmap.FromFile(Path));
+			Atlas.Unbind();
+			return Atlas;
+		}
+
 		public override void Delete() {
 			GL.DeleteTexture(ID);
 		}

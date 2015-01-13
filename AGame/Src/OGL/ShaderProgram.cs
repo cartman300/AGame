@@ -11,20 +11,62 @@ using VAPT = OpenTK.Graphics.OpenGL4.VertexAttribPointerType;
 
 namespace AGame.Src.OGL {
 	class ShaderProgram : GLObject {
+		const string VertShader_Pos = "vert_pos";
+		const string VertShader_Norm = "vert_norm";
+		const string VertShader_UV = "vert_uv";
+		const string UniformMatrix = "Matrix";
+
+		bool MatDirty;
+		Matrix4 Proj, Trans, Rot, Mat;
+		public Matrix4 Projection {
+			get {
+				return Proj;
+			}
+			set {
+				Proj = value;
+				MatDirty = true;
+			}
+		}
+		public Matrix4 Translation {
+			get {
+				return Trans;
+			}
+			set {
+				Trans = value;
+				MatDirty = true;
+			}
+		}
+		public Matrix4 Rotation {
+			get {
+				return Rot;
+			}
+			set {
+				Rot = value;
+				MatDirty = true;
+			}
+		}
+
 		public int PosAttrib {
 			get {
-				return GetAttribLocation("pos");
+				return GetAttribLocation(VertShader_Pos);
 			}
 		}
 
 		public int UVAttrib {
 			get {
-				return GetAttribLocation("uv");
+				return GetAttribLocation(VertShader_UV);
+			}
+		}
+
+		public int NormAttrib {
+			get {
+				return GetAttribLocation(VertShader_Norm);
 			}
 		}
 
 		public ShaderProgram(Shader[] Shaders) {
 			ID = GL.CreateProgram();
+			Projection = Translation = Rotation = Matrix4.Identity;
 
 			for (int i = 0; i < Shaders.Length; i++)
 				Shaders[i].Attach(this);
@@ -50,6 +92,11 @@ namespace AGame.Src.OGL {
 
 		public override void Bind() {
 			GL.UseProgram(ID);
+			if (MatDirty) {
+				MatDirty = false;
+				Mat = Trans * Rot * Proj;
+			}
+			SetUniform(UniformMatrix, ref Mat);
 		}
 
 		public override void Unbind() {
@@ -78,6 +125,10 @@ namespace AGame.Src.OGL {
 
 		public void SetUniform(string Name, Vector4 Val) {
 			GL.Uniform4(GetUniformLocation(Name), Val);
+		}
+
+		public void SetUniform(string Name, ref Matrix4 Matrix, bool Transpose = false) {
+			GL.UniformMatrix4(GetUniformLocation(Name), Transpose, ref Matrix);
 		}
 
 		public void SetUniform(string Name, TextureUnit Unit) {

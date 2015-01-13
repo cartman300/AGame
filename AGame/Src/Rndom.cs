@@ -26,9 +26,9 @@ namespace AGame.Src {
 			}
 		}
 
-		public static char Char {
+		public static byte Char {
 			get {
-				return (char)R.Next(char.MinValue, char.MaxValue);
+				return (byte)R.Next(byte.MinValue, byte.MaxValue);
 			}
 		}
 	}

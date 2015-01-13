@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using OpenTK;
 using OpenTK.Input;
 
 namespace AGame.Src.States {
@@ -29,7 +30,7 @@ namespace AGame.Src.States {
 
 		}
 
-		public virtual void Key(bool Down) {
+		public virtual void Key(KeyboardKeyEventArgs K, bool Down) {
 		}
 
 		public virtual void MouseMove() {

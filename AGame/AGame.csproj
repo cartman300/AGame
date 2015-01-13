@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,7 +24,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\</OutputPath>
@@ -37,13 +37,28 @@
     <ApplicationIcon>ico.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Awesomium.Core, Version=1.7.5.0, Culture=neutral, PublicKeyToken=e1a0d7c8071a5214, processorArchitecture=x86">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="BulletSharp">
       <HintPath>..\dlls\BulletSharp.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Flib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Flib\bin\Flib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HLLib.Net">
+      <HintPath>..\3rdParty\HLLib\bin\HLLib.Net.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.1.1.1589.5942\lib\NET40\OpenTK.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpFont">
+      <HintPath>..\packages\SharpFont.2.5.3.0\lib\net20\SharpFont.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,14 +69,24 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="vCommands">
+      <HintPath>D:\Libs\VCommands\vCommands.dll</HintPath>
+    </Reference>
+    <Reference Include="Victor">
+      <HintPath>..\..\Victor\bin\Victor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Src\AConsole.cs" />
     <Compile Include="Src\Engine.cs" />
-    <Compile Include="Src\Game.cs" />
+    <Compile Include="Src\Meshes\MdlLoader.cs" />
+    <Compile Include="Src\Meshes\Mesh.cs" />
+    <Compile Include="Src\Meshes\Model.cs" />
+    <Compile Include="Src\Meshes\ModelLoader.cs" />
+    <Compile Include="Src\ModelFormats\Mdl.cs" />
     <Compile Include="Src\OGL\GLObject.cs" />
     <Compile Include="Src\OGL\GraphicsTexture.cs" />
-    <Compile Include="Src\OGL\Quad.cs" />
+    <Compile Include="Src\OGL\Quads2D.cs" />
     <Compile Include="Src\OGL\Shader.cs" />
     <Compile Include="Src\OGL\ShaderProgram.cs" />
     <Compile Include="Src\OGL\Texture.cs" />
@@ -72,12 +97,47 @@
     <Compile Include="Src\Rndom.cs" />
     <Compile Include="Src\States\Menu.cs" />
     <Compile Include="Src\States\State.cs" />
+    <Compile Include="Src\Temp.cs" />
     <Compile Include="Src\Text.cs" />
+    <Compile Include="Src\Utils\Extensions.cs" />
     <Compile Include="Src\Utils\Screen.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Data\Fonts\arial.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Data\Fonts\FreeSans.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\ObelixPro.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\Vera.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\VeraMoBd.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\VeraMoBI.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\VeraMoIt.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Fonts\VeraMono.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Shaders\Generic3D.fragment.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Shaders\Generic3D.vertex.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Shaders\Text2D.fragment.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Shaders\Text2D.vertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Data\Shaders\Generic2D.fragment.glsl">
@@ -87,18 +147,24 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="SharpFont.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\BulletSharp.dll">
+    <Content Include="bin\HLLib.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="bin\OpenTK.dll">
+    <Content Include="bin\zlib1.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\Textures\Test.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\Textures\Test2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="bin\freetype6.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="ico.ico" />

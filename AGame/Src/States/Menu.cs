@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Threading;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -15,26 +17,34 @@ using OpenTK.Input;
 
 using AGame.Utils;
 using AGame.Src.OGL;
+using AGame.Src.Meshes;
+
+using HLLibrary;
+
+using Awesomium;
+using Awesomium.Core;
 
 namespace AGame.Src.States {
-	class Menu : State {
-		Text Txt;
+	unsafe class Menu : State {
+		TextLines Txt;
+		Model Missile;
 
 		public Menu() {
-			Font TxtFont = Text.LoadFont("Data/Fonts/FreeSans.ttf", "FreeSans", 12);
+			Flib.Font F = new Flib.Font("C:/Windows/Fonts/consola.ttf", 14);
+			Txt = new TextLines(F);
 
-			Txt = new Text(TxtFont, Game.AGame.Width, Game.AGame.Height);
-			Txt.FillBackground = true;
+			Missile = Engine.Game.CreateModel("models/missile/missile3.mdl")[0];
+			Missile.GLInit();
 
-			for (int i = 0; i < 20; i++)
-				AConsole.Print("Hello World #{0}!", i);
+		}
+
+		public override void RenderOpaque(float T) {
+			Missile.RenderOpaque();
 		}
 
 		public override void RenderGUI(float T) {
-			AConsole.Render();
-
-			Txt.Tex.FillRectangle(Txt.BackColor, Vector2.Zero, Txt.MeasureString("FPS ####"));
-			Txt.Print("FPS " + Math.Round(1.0f / T, 1).ToString());
+			Txt[0] = "Frametime: " + T;
+			Txt[1] = "FPS: " + Math.Round(1f / T, 1);
 			Txt.Render();
 		}
 	}
