@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -13,18 +14,26 @@ namespace AGame.Src.OGL {
 		internal List<ShaderProgram> Programs;
 
 		public ShaderType SType;
+		public bool Dirty;
+		public FileSystemWatcher FileWatcher;
 
-		public Shader(ShaderType SType) {
-			Programs = new List<ShaderProgram>();
+		string Dir, Fil, Pth;
 
-			ID = GL.CreateShader(SType);
+		public Shader(ShaderType SType, string Pth) {
+			Pth = Pth.Replace('\\', '/');
 
 			this.SType = SType;
-		}
+			ID = GL.CreateShader(SType);
+			Programs = new List<ShaderProgram>();
+			Dirty = true;
 
-		public Shader(ShaderType SType, string Src)
-			: this(SType) {
-			Compile(Src);
+			Dir = Path.GetFullPath(Pth.Substring(0, Pth.LastIndexOf('/')));
+			Fil = Pth.Substring(Pth.LastIndexOf('/') + 1);
+			this.Pth = Path.Combine(Dir, Fil);
+
+			FileWatcher = new FileSystemWatcher(Dir, Fil);
+			FileWatcher.Changed += (S, E) => Dirty = true;
+			FileWatcher.EnableRaisingEvents = true;
 		}
 
 		public override void Delete() {
@@ -39,12 +48,18 @@ namespace AGame.Src.OGL {
 		}
 
 		public void Detach(ShaderProgram Prog) {
+			if (Programs.Contains(Prog))
+				Programs.Remove(Prog);
 			GL.DetachShader(Prog.ID, ID);
 		}
 
 		public void DetachAll() {
 			for (int i = 0; i < Programs.Count; i++)
 				Detach(Programs[i]);
+		}
+
+		public void Recompile() {
+			Compile(File.ReadAllText(Pth));
 		}
 
 		public void Compile(string Src) {
@@ -55,7 +70,7 @@ namespace AGame.Src.OGL {
 			GL.GetShader(ID, ShaderParameter.CompileStatus, out Status);
 
 			if (Status != 1)
-				throw new Exception(GL.GetShaderInfoLog(ID));
+				throw new Exception(string.Format("Exception in shader {0}\n{1}", Fil, GL.GetShaderInfoLog(ID)).Trim());
 		}
 	}
 }

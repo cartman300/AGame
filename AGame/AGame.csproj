@@ -78,6 +78,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Src\Camera.cs" />
     <Compile Include="Src\Engine.cs" />
     <Compile Include="Src\Meshes\MdlLoader.cs" />
     <Compile Include="Src\Meshes\Mesh.cs" />

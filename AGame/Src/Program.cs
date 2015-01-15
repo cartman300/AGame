@@ -71,7 +71,6 @@ namespace AGame.Src {
 
 			using (Engine G = new Engine(W, H, GMode, Fullscreen)) {
 				G.VSync = VSyncMode.On;
-				G.CenterMouse();
 				G.Run(60, 60);
 			}
 

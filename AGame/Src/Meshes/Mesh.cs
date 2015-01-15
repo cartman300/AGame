@@ -30,16 +30,58 @@ namespace AGame.Src.Meshes {
 			this.Normal = Normal;
 			this.UV = UV;
 		}
+
+		public Vertex(Vector3 Position) {
+			this.Position = Position;
+			this.Normal = Vector3.Zero;
+			this.UV = Vector2.Zero;
+		}
 	}
 
 	class Mesh {
+		public static uint[] Triangulate(uint A, uint B, uint C, uint D, bool CW = true) {
+			uint[] Ret = new uint[] { A, B, C, C, D, A };
+			if (!CW)
+				Ret = Ret.Reverse().ToArray();
+			return Ret;
+		}
+
+		public static Mesh CreateCuboid(float W, float H, float D) {
+			Mesh Cuboid = new Mesh(8);
+
+			Cuboid[0] = new Vertex(new Vector3(W / -2f, H / -2f, D / -2f));
+			Cuboid[1] = new Vertex(new Vector3(W / -2f, H / 2f, D / -2f));
+			Cuboid[2] = new Vertex(new Vector3(W / 2f, H / 2f, D / -2f));
+			Cuboid[3] = new Vertex(new Vector3(W / 2f, H / -2f, D / -2f));
+			Cuboid[4] = new Vertex(new Vector3(W / -2f, H / -2f, D / 2f));
+			Cuboid[5] = new Vertex(new Vector3(W / -2f, H / 2f, D / 2f));
+			Cuboid[6] = new Vertex(new Vector3(W / 2f, H / 2f, D / 2f));
+			Cuboid[7] = new Vertex(new Vector3(W / 2f, H / -2f, D / 2f));
+
+			Cuboid.Inds.AddRange(Mesh.Triangulate(0, 1, 2, 3, false));
+			Cuboid.Inds.AddRange(Mesh.Triangulate(3, 2, 6, 7, false));
+			Cuboid.Inds.AddRange(Mesh.Triangulate(7, 6, 5, 4, false));
+			Cuboid.Inds.AddRange(Mesh.Triangulate(4, 5, 1, 0, false));
+			Cuboid.Inds.AddRange(Mesh.Triangulate(1, 5, 6, 2, false));
+			Cuboid.Inds.AddRange(Mesh.Triangulate(3, 7, 4, 0, false));
+			return Cuboid;
+		}
+
 		public Vertex[] Verts;
 		public List<uint> Inds;
+
+		public bool MultiplyColor;
+		public Color4 Color;
+		public Vector3 Position;
 
 		public Mesh(int Len, bool Transparent = false) {
 			Verts = new Vertex[Len];
 			Inds = new List<uint>();
 			IsTransparent = Transparent;
+
+			Position = Vector3.Zero;
+			Color = Color4.White;
+			MultiplyColor = true;
 		}
 
 		/*public void Unroll() {
@@ -102,9 +144,7 @@ namespace AGame.Src.Meshes {
 			if (Tex != null)
 				Tex.Bind();
 			Bind();
-			Shader.Bind();
-			MeshVAO.DrawElements(Inds.Count);
-			Shader.Unbind();
+			Shader.BindUse(Position, Color, MultiplyColor, () => MeshVAO.DrawElements(Inds.Count));
 			Unbind();
 			if (Tex != null)
 				Tex.Unbind();

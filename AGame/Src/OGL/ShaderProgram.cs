@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -14,35 +15,27 @@ namespace AGame.Src.OGL {
 		const string VertShader_Pos = "vert_pos";
 		const string VertShader_Norm = "vert_norm";
 		const string VertShader_UV = "vert_uv";
-		const string UniformMatrix = "Matrix";
 
-		bool MatDirty;
-		Matrix4 Proj, Trans, Rot, Mat;
-		public Matrix4 Projection {
-			get {
-				return Proj;
-			}
+		const string UniformMatrix = "Matrix";
+		const string UniformMultColor = "MultColor";
+		const string UniformColor = "ObjColor";
+
+		public Matrix4 Matrix {
 			set {
-				Proj = value;
-				MatDirty = true;
+				Matrix4 M = value;
+				SetUniform(UniformMatrix, ref M);
 			}
 		}
-		public Matrix4 Translation {
-			get {
-				return Trans;
-			}
+
+		public bool MultiplyColor {
 			set {
-				Trans = value;
-				MatDirty = true;
+				SetUniform(UniformMultColor, value);
 			}
 		}
-		public Matrix4 Rotation {
-			get {
-				return Rot;
-			}
+
+		public Color4 Color {
 			set {
-				Rot = value;
-				MatDirty = true;
+				SetUniform(UniformColor, value);
 			}
 		}
 
@@ -64,12 +57,21 @@ namespace AGame.Src.OGL {
 			}
 		}
 
+		public Matrix4 Modelview;
+		public Camera Cam;
+		public Shader[] Shaders;
+
 		public ShaderProgram(Shader[] Shaders) {
-			ID = GL.CreateProgram();
-			Projection = Translation = Rotation = Matrix4.Identity;
+			Create();
+			Modelview = Matrix4.Identity;
+			this.Shaders = Shaders;
 
 			for (int i = 0; i < Shaders.Length; i++)
 				Shaders[i].Attach(this);
+		}
+
+		void Create() {
+			ID = GL.CreateProgram();
 		}
 
 		public override void Delete() {
@@ -91,12 +93,41 @@ namespace AGame.Src.OGL {
 		}
 
 		public override void Bind() {
-			GL.UseProgram(ID);
-			if (MatDirty) {
-				MatDirty = false;
-				Mat = Trans * Rot * Proj;
+			if (Shaders.Any((S) => S.Dirty)) {
+				for (int i = 0; i < Shaders.Length; i++)
+					if (Shaders[i].Dirty) {
+						bool DoRecompile = true;
+						while (DoRecompile) {
+							try {
+								Console.WriteLine("Reloading {0}", Shaders[i].FileWatcher.Filter);
+								Shaders[i].Recompile();
+								Shaders[i].Dirty = false;
+								DoRecompile = false;
+							} catch (Exception E) {
+								Console.WriteLine(E.Message);
+								DoRecompile = true;
+								Shaders[i].FileWatcher.WaitForChanged(WatcherChangeTypes.All);
+							}
+						}
+					}
+				Link();
 			}
-			SetUniform(UniformMatrix, ref Mat);
+
+			GL.UseProgram(ID);
+			if (Cam != null)
+				Matrix = Modelview * Cam.Collapse();
+		}
+
+		public void BindUse(Vector3 Pos, Color4 Clr, bool MultClr, Action A) {
+			Modelview = Matrix4.CreateTranslation(Pos);	
+			Bind();
+			Color = Clr;
+			MultiplyColor = MultClr;
+			A();
+			Modelview = Matrix4.Identity;
+			Color = Color4.White;
+			MultiplyColor = true;
+			Unbind();
 		}
 
 		public override void Unbind() {
@@ -107,31 +138,46 @@ namespace AGame.Src.OGL {
 			return GL.GetAttribLocation(ID, Name);
 		}
 
-		public int GetUniformLocation(string Name) {
+		int GetUniformLocation(string Name) {
 			return GL.GetUniformLocation(ID, Name);
 		}
 
-		public void SetUniform(string Name, int Val) {
-			GL.Uniform1(GetUniformLocation(Name), Val);
+		void SetUniform(string Name, int Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform1(Loc, Val);
 		}
 
-		public void SetUniform(string Name, Vector2 Val) {
-			GL.Uniform2(GetUniformLocation(Name), Val);
+		void SetUniform(string Name, Vector2 Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform2(Loc, Val);
 		}
 
-		public void SetUniform(string Name, Vector3 Val) {
-			GL.Uniform3(GetUniformLocation(Name), Val);
+		void SetUniform(string Name, Vector3 Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform3(Loc, Val);
 		}
 
-		public void SetUniform(string Name, Vector4 Val) {
-			GL.Uniform4(GetUniformLocation(Name), Val);
+		void SetUniform(string Name, Vector4 Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform4(Loc, Val);
 		}
 
-		public void SetUniform(string Name, ref Matrix4 Matrix, bool Transpose = false) {
-			GL.UniformMatrix4(GetUniformLocation(Name), Transpose, ref Matrix);
+		void SetUniform(string Name, Color4 Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform4(Loc, Val);
 		}
 
-		public void SetUniform(string Name, TextureUnit Unit) {
+		void SetUniform(string Name, bool Val) {
+			int Loc = GetUniformLocation(Name);
+			GL.Uniform1(Loc, Val ? 1 : 0);
+		}
+
+		void SetUniform(string Name, ref Matrix4 Matrix, bool Transpose = false) {
+			int Loc = GetUniformLocation(Name);
+			GL.UniformMatrix4(Loc, Transpose, ref Matrix);
+		}
+
+		void SetUniform(string Name, TextureUnit Unit) {
 			SetUniform(Name, (int)Unit - (int)TextureUnit.Texture0);
 		}
 	}

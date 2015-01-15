@@ -27,7 +27,9 @@ using Awesomium.Core;
 namespace AGame.Src.States {
 	unsafe class Menu : State {
 		TextLines Txt;
+
 		Model Missile;
+		Model Cube;
 
 		public Menu() {
 			Flib.Font F = new Flib.Font("C:/Windows/Fonts/consola.ttf", 14);
@@ -36,10 +38,19 @@ namespace AGame.Src.States {
 			Missile = Engine.Game.CreateModel("models/missile/missile3.mdl")[0];
 			Missile.GLInit();
 
+			Cube = new Model();
+			Mesh Cuboid = Mesh.CreateCuboid(10, 10, 10);
+			Cuboid.Position = new Vector3(0, 100, 0);
+			Cuboid.Color = Color.White;
+			Cuboid.MultiplyColor = false;
+
+			Cube.Add(Cuboid, Engine.Generic3D);
+			Cube.GLInit();
 		}
 
 		public override void RenderOpaque(float T) {
 			Missile.RenderOpaque();
+			Cube.RenderOpaque();
 		}
 
 		public override void RenderGUI(float T) {

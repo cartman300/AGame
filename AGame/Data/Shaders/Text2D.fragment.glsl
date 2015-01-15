@@ -3,6 +3,8 @@
 in vec2 frag_uv;
 out vec4 Color;
 uniform sampler2D tex;
+uniform int MultColor;
+uniform vec4 ObjColor;
 
 #define COLOR vec3(1.0, 1.0, 1.0)
 

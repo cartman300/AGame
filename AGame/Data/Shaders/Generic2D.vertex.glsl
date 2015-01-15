@@ -1,6 +1,8 @@
 ﻿#version 130
 
 uniform mat4 Matrix;
+uniform int MultColor;
+uniform vec4 ObjColor;
 
 in vec2 vert_pos;
 in vec2 vert_uv;

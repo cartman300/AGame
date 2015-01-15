@@ -27,12 +27,17 @@ namespace AGame.Src {
 		public static ShaderProgram Text2D;
 		public static ShaderProgram Generic3D;
 
+		public Camera Camera3D;
+
 		State _ActiveState;
 		List<ModelLoader> ModelLoaders;
+
+		bool MouseEnabled;
 
 		public Engine(int W, int H, GraphicsMode GMode, bool Borderless = true)
 			: base(W, H, GMode, "A Game", GameWindowFlags.FixedWindow) {
 			Context.ErrorChecking = true;
+			CenterMouse();
 
 			if (Game != null)
 				throw new Exception("Can not run multiple instances of engine");
@@ -80,33 +85,35 @@ namespace AGame.Src {
 			GL.DepthFunc(DepthFunction.Less);
 
 			Generic2D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, File.ReadAllText("Data/Shaders/Generic2D.vertex.glsl")),
-				new Shader(ShaderType.FragmentShader, File.ReadAllText("Data/Shaders/Generic2D.fragment.glsl")),
+				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
+				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic2D.fragment.glsl"),
 			});
 
 			Generic3D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, File.ReadAllText("Data/Shaders/Generic3D.vertex.glsl")),
-				new Shader(ShaderType.FragmentShader, File.ReadAllText("Data/Shaders/Generic3D.fragment.glsl")),
+				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic3D.vertex.glsl"),
+				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic3D.fragment.glsl"),
 			});
 
 			Text2D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, File.ReadAllText("Data/Shaders/Text2D.vertex.glsl")),
-				new Shader(ShaderType.FragmentShader, File.ReadAllText("Data/Shaders/Text2D.fragment.glsl")),
+				new Shader(ShaderType.VertexShader,"Data/Shaders/Text2D.vertex.glsl"),
+				new Shader(ShaderType.FragmentShader, "Data/Shaders/Text2D.fragment.glsl"),
 			});
 
 			Size Res = ClientSize;
 			Matrix4 Offset = Matrix4.CreateTranslation(-Res.Width / 2, Res.Height / 2, 0);
-			Matrix4 Ortho = Matrix4.CreateOrthographic(Res.Width, Res.Height, -1, 1);
 
-			Generic2D.Projection = Text2D.Projection = Ortho;
-			Generic2D.Translation = Text2D.Translation = Offset;
+			Generic2D.Cam = new Camera();
+			Generic2D.Cam.Projection = Matrix4.CreateOrthographic(Res.Width, Res.Height, -1, 1);
+			Generic2D.Cam.Translation = Offset;
+			Text2D.Cam = Generic2D.Cam;
 
 			float FOV = 90f * (float)Math.PI / 180f;
-			Generic3D.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Res.Width / Res.Height, 1, 1000);
+			Generic3D.Cam = new Camera();
+			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Res.Width / Res.Height, 1, 1000);
 
 			Matrix4 LookAt = Matrix4.LookAt(new Vector3(50, 50, 10), Vector3.Zero, Vector3.UnitY);
-			Generic3D.Translation = Matrix4.CreateTranslation(LookAt.ExtractTranslation());
-			Generic3D.Rotation = Matrix4.CreateFromQuaternion(LookAt.ExtractRotation());
+			Generic3D.Cam.Translation = Matrix4.CreateTranslation(LookAt.ExtractTranslation());
+			Generic3D.Cam.Rotation = Matrix4.CreateFromQuaternion(LookAt.ExtractRotation());
 
 			//Generic3D.Translation = Matrix4.CreateTranslation(50, 0, 0);
 		}
@@ -114,7 +121,6 @@ namespace AGame.Src {
 		ShaderProgram CreateShader(Shader[] S) {
 			ShaderProgram Prog = new ShaderProgram(S);
 			Prog.BindFragDataLocation(0, "Color");
-			Prog.Link();
 			Prog.Bind();
 			return Prog;
 		}
@@ -139,6 +145,9 @@ namespace AGame.Src {
 			base.OnKeyDown(e);
 			if (e.Key == Key.F4 && e.Modifiers.HasFlag(KeyModifiers.Alt))
 				Exit();
+
+			if (e.Key == Key.Escape)
+				CursorVisible = !(MouseEnabled = !MouseEnabled);
 
 			if (e.Key == Key.Enter || e.Key == Key.KeypadEnter)
 				ActiveState.TextEntered("\n");
@@ -169,8 +178,8 @@ namespace AGame.Src {
 		}
 
 		int MX, MY;
-		float RotX;
-		float RotY;
+		/*float RotX;
+		float RotY;*/
 		bool FirstTimeMouse = true;
 
 		protected override void OnUpdateFrame(FrameEventArgs E) {
@@ -178,42 +187,43 @@ namespace AGame.Src {
 			const float MoveSpeed = 42.0f;
 			float T = (float)E.Time;
 
-			if (Keyboard[Key.W]) {
-				Generic3D.Translation *= Matrix4.CreateTranslation(new Vector3((float)Math.Sin(RotX), 0,
-					(float)Math.Cos(RotX)) * T * MoveSpeed);
-			}
-			if (Keyboard[Key.S]) {
-				Generic3D.Translation *= Matrix4.CreateTranslation(-new Vector3((float)Math.Sin(RotX), 0,
-					(float)Math.Cos(RotX)) * T * MoveSpeed);
-			}
-			if (Keyboard[Key.A]) {
-				Generic3D.Translation *= Matrix4.CreateTranslation(new Vector3((float)Math.Sin(RotX + MathHelper.PiOver2), 0,
-					(float)Math.Cos(RotX + MathHelper.PiOver2)) * T * MoveSpeed);
-			}
-			if (Keyboard[Key.D]) {
-				Generic3D.Translation *= Matrix4.CreateTranslation(-new Vector3((float)Math.Sin(RotX + MathHelper.PiOver2), 0,
-					(float)Math.Cos(RotX + MathHelper.PiOver2)) * T * MoveSpeed);
-			}
+			Camera Cam = Generic3D.Cam;
+
+			if (Keyboard[Key.W])
+				Cam.Move(-new Vector3((float)Math.Sin(Cam.RotationX), 0,
+					(float)Math.Cos(Cam.RotationX)) * T * MoveSpeed);
+
+			if (Keyboard[Key.S])
+				Cam.Move(new Vector3((float)Math.Sin(Cam.RotationX), 0,
+					(float)Math.Cos(Cam.RotationX)) * T * MoveSpeed);
+
+			if (Keyboard[Key.A])
+				Cam.Move(-new Vector3((float)Math.Sin(Cam.RotationX + MathHelper.PiOver2), 0,
+					(float)Math.Cos(Cam.RotationX + MathHelper.PiOver2)) * T * MoveSpeed);
+
+			if (Keyboard[Key.D])
+				Cam.Move(new Vector3((float)Math.Sin(Cam.RotationX + MathHelper.PiOver2), 0,
+					(float)Math.Cos(Cam.RotationX + MathHelper.PiOver2)) * T * MoveSpeed);
 
 			if (Keyboard[Key.Space])
-				Generic3D.Translation *= Matrix4.CreateTranslation(-new Vector3(0, MoveSpeed * T, 0));
+				Cam.Move(new Vector3(0, MoveSpeed * T, 0));
 			if (Keyboard[Key.LControl])
-				Generic3D.Translation *= Matrix4.CreateTranslation(new Vector3(0, MoveSpeed *T, 0));
+				Cam.Move(-new Vector3(0, MoveSpeed * T, 0));
 
-			if (!FirstTimeMouse) {
-				float DX = (MX - Mouse.X) * Sens * T;
-				float DY = (MY - Mouse.Y) * Sens * T;
-				if (DX != 0 || DY != 0) {
-					RotX += DX;
-					RotY += DY;
-					RotY = (float)MathHelper.Clamp(RotY, -MathHelper.PiOver2, MathHelper.PiOver2);
-
-					Generic3D.Rotation = Matrix4.CreateRotationY(-RotX) * Matrix4.CreateRotationX(-RotY);
-				}
-				MX = Mouse.X;
-				MY = Mouse.Y;
-			} else
-				FirstTimeMouse = false;
+			if (MouseEnabled) {
+				if (!FirstTimeMouse) {
+					float DX = (MX - Mouse.X) * Sens * T;
+					float DY = (MY - Mouse.Y) * Sens * T;
+					if (DX != 0 || DY != 0) {
+						Cam.RotationX += DX;
+						Cam.RotationY += DY;
+						Cam.RotationY = (float)MathHelper.Clamp(Cam.RotationY, -MathHelper.PiOver2, MathHelper.PiOver2);
+					}
+					MX = Mouse.X;
+					MY = Mouse.Y;
+				} else
+					FirstTimeMouse = false;
+			}
 
 			base.OnUpdateFrame(E);
 			ActiveState.Update((float)E.Time);
