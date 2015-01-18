@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.IO;
+using FCursor = System.Windows.Forms.Cursor;
 
 using OpenTK;
 using OpenTK.Graphics;
@@ -20,38 +21,18 @@ using AGame.Src.Meshes;
 
 namespace AGame.Src {
 	class Camera {
-		public Matrix4 Translation, Rotation, Zoom, Projection;
+		public Matrix4 Translation, Zoom, Projection;
+		public float MouseSensitivity;
 
-		bool DirtyRot;
+		public Quaternion Rotation;
 
-		float RotX;
-		public float RotationX {
-			get {
-				return RotX;
-			}
-			set {
-				if (value == 0)
-					return;
-				RotX = value;
-				DirtyRot = true;
-			}
-		}
-
-		float RotY;
-		public float RotationY {
-			get {
-				return RotY;
-			}
-			set {
-				if (value == 0)
-					return;
-				RotY = value;
-				DirtyRot = true;
-			}
-		}
+		public float RotationX;
+		public float RotationY;
 
 		public Camera() {
-			Translation = Rotation = Zoom = Projection = Matrix4.Identity;
+			Translation = Zoom = Projection = Matrix4.Identity;
+			Rotation = Quaternion.FromAxisAngle(Vector3.UnitY, 0);
+			MouseSensitivity = 1.0f;
 		}
 
 		public void Move(Vector3 Delta) {
@@ -62,11 +43,38 @@ namespace AGame.Src {
 			Translation = Matrix4.CreateTranslation(Pos);
 		}
 
-		public Matrix4 Collapse() {
-			if (DirtyRot)
-				Rotation = Matrix4.CreateRotationY(-RotX) * Matrix4.CreateRotationX(-RotY);
+		public Vector3 GetForward() {
+			Matrix4 M = Matrix4.CreateFromQuaternion(Rotation);
+			M.Invert();
+			return new Vector3(0, 0, -1).Transform(M);
+		}
 
-			return Translation * Rotation * Zoom * Projection;
+		public Vector3 GetPosition() {
+			return -Translation.ExtractTranslation();
+		}
+
+		public void MouseRotate(float T) {
+			Point WindowCenter = Engine.Game.GetWindowCenter();
+			Point CurPos = FCursor.Position;
+
+			float Accel = MouseSensitivity * T;
+			float DX = (WindowCenter.X - CurPos.X) * Accel;
+			float DY = (WindowCenter.Y - CurPos.Y) * Accel;
+
+			if (DX == 0 && DY == 0)
+				return;
+
+			RotationX += DX;
+			RotationY += DY;
+			RotationY = (float)MathHelper.Clamp(RotationY, -MathHelper.PiOver2, MathHelper.PiOver2);
+			Rotation = Quaternion.FromAxisAngle(Vector3.UnitX, -RotationY) *
+				Quaternion.FromAxisAngle(Vector3.UnitY, -RotationX);
+
+			FCursor.Position = WindowCenter;
+		}
+
+		public Matrix4 Collapse() {
+			return Translation * Matrix4.CreateFromQuaternion(Rotation) * Zoom * Projection;
 		}
 	}
 }

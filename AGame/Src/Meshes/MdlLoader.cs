@@ -56,7 +56,7 @@ namespace AGame.Src.Meshes {
 						mstudio_meshvertexdata_t* VertData = PMesh->GetVertexData(VVDHeader);
 
 						Mesh Msh = new Mesh(PMesh->numvertices);
-						TheModel.Add(Msh, Engine.Generic3D);
+						TheModel.Add(Msh);
 
 						string IntName = Header->Name;
 						string MatPath = "materials/models/" + IntName.Substring(0, IntName.IndexOf('/') + 1) + Txtr->Name + ".png";

@@ -26,6 +26,11 @@ namespace AGame.Src.OGL {
 		public VAO QuadVAO;
 		public VBO QuadPos;
 		public VBO QuadUV;
+		public ShaderProgram Shader;
+
+		public static Vector2[] Quad(float X, float Y, float W, float H, bool Tris = false) {
+			return Quad(new Vector2(X, Y), new Vector2(W, H), Tris);
+		}
 
 		public static Vector2[] Quad(Vector2 Pos, Vector2 Size, bool Triangles = false) {
 			if (Triangles) {
@@ -47,6 +52,12 @@ namespace AGame.Src.OGL {
 			};
 		}
 
+		public static Quads2D Quad2D(Vector2 Pos, Vector2 Size) {
+			Quads2D Q = new Quads2D();
+			Q.SetData(Quads2D.Quad(Pos, Size), Quads2D.Quad(new Vector2(0, 0), new Vector2(1, 1)));
+			return Q;
+		}
+
 		public Quads2D(VAO Owner = null, BufferUsageHint Hint = BufferUsageHint.StaticDraw) {
 			Pos = new Vector2[] { };
 			UVs = new Vector2[] { };
@@ -62,6 +73,8 @@ namespace AGame.Src.OGL {
 
 			QuadPos = new VBO(BufferTarget.ArrayBuffer, Hint);
 			QuadUV = new VBO(BufferTarget.ArrayBuffer, Hint);
+
+			Shader = Engine.Generic2D;
 		}
 
 		public Quads2D(VAO Owner, Vector2[] Pos, Vector2[] UVs, BufferUsageHint Hint = BufferUsageHint.StaticDraw)
@@ -83,11 +96,11 @@ namespace AGame.Src.OGL {
 
 			QuadPos.Bind();
 			QuadPos.Data(Pos);
-			QuadPos.VertexAttribPointer(Engine.Generic2D.PosAttrib);
+			QuadPos.VertexAttribPointer(Shader.PosAttrib);
 
 			QuadUV.Bind();
 			QuadUV.Data(UVs);
-			QuadUV.VertexAttribPointer(Engine.Generic2D.UVAttrib);
+			QuadUV.VertexAttribPointer(Shader.UVAttrib);
 
 			Unbind();
 		}

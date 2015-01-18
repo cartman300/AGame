@@ -15,15 +15,41 @@ namespace AGame.Src.OGL {
 		const string VertShader_Pos = "vert_pos";
 		const string VertShader_Norm = "vert_norm";
 		const string VertShader_UV = "vert_uv";
+		const string VertShader_Clr = "vert_clr";
 
 		const string UniformMatrix = "Matrix";
+		const string UniformModelMatrix = "ModelMatrix";
+		const string UniformNormMatrix = "NormMatrix";
 		const string UniformMultColor = "MultColor";
 		const string UniformColor = "ObjColor";
+		const string UniformResolution = "Resolution";
+
+		public static ShaderProgram ActiveShader, LastActive;
 
 		public Matrix4 Matrix {
 			set {
 				Matrix4 M = value;
 				SetUniform(UniformMatrix, ref M);
+			}
+		}
+
+		public Vector2 Resolution {
+			set {
+				SetUniform(UniformResolution, value);
+			}
+		}
+
+		public Matrix4 ModelMatrix {
+			set {
+				Matrix4 M = value;
+				SetUniform(UniformModelMatrix, ref M);
+			}
+		}
+
+		public Matrix4 NormMatrix {
+			set {
+				Matrix4 M = value;
+				SetUniform(UniformNormMatrix, ref M);
 			}
 		}
 
@@ -48,6 +74,12 @@ namespace AGame.Src.OGL {
 		public int UVAttrib {
 			get {
 				return GetAttribLocation(VertShader_UV);
+			}
+		}
+
+		public int ClrAttrib {
+			get {
+				return GetAttribLocation(VertShader_Clr);
 			}
 		}
 
@@ -113,13 +145,21 @@ namespace AGame.Src.OGL {
 				Link();
 			}
 
+			LastActive = ActiveShader = this;
 			GL.UseProgram(ID);
-			if (Cam != null)
+			Resolution = Engine.Game.Resolution;
+			if (Cam != null) {
+				ModelMatrix = Modelview;
 				Matrix = Modelview * Cam.Collapse();
+				Matrix4 M = Modelview;
+				M.Transpose();
+				M.Invert();
+				NormMatrix = M;
+			}
 		}
 
-		public void BindUse(Vector3 Pos, Color4 Clr, bool MultClr, Action A) {
-			Modelview = Matrix4.CreateTranslation(Pos);	
+		public void Use(Vector3 Pos, Quaternion Rot, float Scale, Color4 Clr, bool MultClr, Action A) {
+			Modelview = Matrix4.CreateScale(Scale) * Matrix4.CreateFromQuaternion(Rot) * Matrix4.CreateTranslation(Pos);
 			Bind();
 			Color = Clr;
 			MultiplyColor = MultClr;
@@ -132,6 +172,7 @@ namespace AGame.Src.OGL {
 
 		public override void Unbind() {
 			GL.UseProgram(0);
+			ActiveShader = null;
 		}
 
 		public int GetAttribLocation(string Name) {

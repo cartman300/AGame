@@ -84,7 +84,9 @@
     <Compile Include="Src\Meshes\Mesh.cs" />
     <Compile Include="Src\Meshes\Model.cs" />
     <Compile Include="Src\Meshes\ModelLoader.cs" />
+    <Compile Include="Src\Meshes\ObjLoader.cs" />
     <Compile Include="Src\ModelFormats\Mdl.cs" />
+    <Compile Include="Src\OGL\FBO_RBO.cs" />
     <Compile Include="Src\OGL\GLObject.cs" />
     <Compile Include="Src\OGL\GraphicsTexture.cs" />
     <Compile Include="Src\OGL\Quads2D.cs" />
@@ -96,9 +98,10 @@
     <Compile Include="Src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Src\Rndom.cs" />
+    <Compile Include="Src\States\Debug.cs" />
+    <Compile Include="Src\States\MapEditor.cs" />
     <Compile Include="Src\States\Menu.cs" />
     <Compile Include="Src\States\State.cs" />
-    <Compile Include="Src\Temp.cs" />
     <Compile Include="Src\Text.cs" />
     <Compile Include="Src\Utils\Extensions.cs" />
     <Compile Include="Src\Utils\Screen.cs" />
@@ -129,6 +132,9 @@
     <None Include="Data\Fonts\VeraMono.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Data\Shaders\Screen.fragment.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Data\Shaders\Generic3D.fragment.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -157,6 +163,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="bin\zlib1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\Textures\grid.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\Textures\Test.png">

@@ -36,6 +36,7 @@ namespace AGame.Src.OGL {
 
 		public void VertexAttribPointer(int Idx, int Size = 0, int Stride = 0, int Offset = 0, VAPT PtrType = VAPT.Float) {
 			Bind();
+
 			if (Size <= 0)
 				Size = DataSize;
 			GL.EnableVertexAttribArray(Idx);
@@ -62,6 +63,9 @@ namespace AGame.Src.OGL {
 			} else if (typeof(T) == typeof(uint)) {
 				Size *= sizeof(uint);
 				DataSize = 1;
+			} else if (typeof(T) == typeof(Color4)) {
+				Size *= Vector4.SizeInBytes;
+				DataSize = 4;
 			} else
 				throw new Exception("Type not supported: " + typeof(T).ToString());
 

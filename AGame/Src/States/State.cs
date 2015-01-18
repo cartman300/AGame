@@ -30,7 +30,7 @@ namespace AGame.Src.States {
 
 		}
 
-		public virtual void Key(KeyboardKeyEventArgs K, bool Down) {
+		public virtual void OnKey(KeyboardKeyEventArgs K, bool Down) {
 		}
 
 		public virtual void MouseMove() {

@@ -19,44 +19,72 @@ using AGame.Utils;
 using AGame.Src.OGL;
 using AGame.Src.Meshes;
 
-using HLLibrary;
-
-using Awesomium;
-using Awesomium.Core;
-
 namespace AGame.Src.States {
-	unsafe class Menu : State {
-		TextLines Txt;
+	class Menu : State {
+		static Menu Singleton;
 
-		Model Missile;
-		Model Cube;
-
-		public Menu() {
-			Flib.Font F = new Flib.Font("C:/Windows/Fonts/consola.ttf", 14);
-			Txt = new TextLines(F);
-
-			Missile = Engine.Game.CreateModel("models/missile/missile3.mdl")[0];
-			Missile.GLInit();
-
-			Cube = new Model();
-			Mesh Cuboid = Mesh.CreateCuboid(10, 10, 10);
-			Cuboid.Position = new Vector3(0, 100, 0);
-			Cuboid.Color = Color.White;
-			Cuboid.MultiplyColor = false;
-
-			Cube.Add(Cuboid, Engine.Generic3D);
-			Cube.GLInit();
+		public static void SwitchTo() {
+			if (Singleton == null)
+				Singleton = new Menu();
+			Engine.Game.ActiveState = Singleton;
 		}
 
-		public override void RenderOpaque(float T) {
-			Missile.RenderOpaque();
-			Cube.RenderOpaque();
+		ColoredText MenuText;
+		List<Tuple<string, Action>> MenuEntries;
+		byte SelectedEntry;
+		bool MenuDirty;
+
+		public Menu() {
+			Flib.Font MenuFont = new Flib.Font("Data/Fonts/Vera.ttf", 18);
+			MenuText = new ColoredText(MenuFont, 80, 100);
+
+			SelectedEntry = 0;
+			MenuEntries = new List<Tuple<string, Action>>();
+
+			MenuEntries.Add(new Tuple<string, Action>("New Game", () => {
+			}));
+
+			MenuEntries.Add(new Tuple<string, Action>("Map Editor", () => Engine.Game.ActiveState = new MapEditor()));
+
+			MenuEntries.Add(new Tuple<string, Action>("Options", () => {
+			}));
+
+			MenuEntries.Add(new Tuple<string, Action>("Exit", Engine.Game.Exit));
+
+			MenuDirty = true;
+		}
+
+		public override void OnKey(KeyboardKeyEventArgs K, bool Down) {
+			if (Down) {
+				if (K.Key == Key.W || K.Key == Key.Up) {
+					if (SelectedEntry > 0)
+						SelectedEntry--;
+				} else if (K.Key == Key.S || K.Key == Key.Down) {
+					if (SelectedEntry < MenuEntries.Count - 1)
+						SelectedEntry++;
+				} else if (K.Key == Key.Space || K.Key == Key.Enter || K.Key == Key.KeypadEnter)
+					MenuEntries[SelectedEntry].Item2();
+				MenuDirty = true;
+			}
+		}
+
+		public override void Update(float T) {
+			if (MenuDirty) {
+				MenuDirty = false;
+				MenuText.Clear();
+				for (int i = 0; i < MenuEntries.Count; i++) {
+					bool Selected = i == SelectedEntry;
+					if (Selected)
+						MenuText.Print("> ");
+					MenuText.Print(MenuEntries[i].Item1 + "\n", Selected ? Color4.White : Color4.Gray);
+				}
+			}
 		}
 
 		public override void RenderGUI(float T) {
-			Txt[0] = "Frametime: " + T;
-			Txt[1] = "FPS: " + Math.Round(1f / T, 1);
-			Txt.Render();
+			// TODO: Remove hardcoded position
+			Engine.Text2D.Use(new Vector3(100, 200, 0), Quaternion.FromAxisAngle(Vector3.UnitZ, 0),
+				1.0f, Color4.White, true, MenuText.Render);
 		}
 	}
 }

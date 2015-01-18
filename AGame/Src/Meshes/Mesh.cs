@@ -1,5 +1,4 @@
 ﻿using System;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,15 +8,13 @@ using System.Runtime.InteropServices;
 
 using AGame.Src.ModelFormats;
 using AGame.Utils;
+using AGame.Src.OGL;
+using AGame.Src.Meshes;
 
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Input;
-
-using AGame.Utils;
-using AGame.Src.OGL;
-using AGame.Src.Meshes;
 
 namespace AGame.Src.Meshes {
 	struct Vertex {
@@ -70,18 +67,12 @@ namespace AGame.Src.Meshes {
 		public Vertex[] Verts;
 		public List<uint> Inds;
 
-		public bool MultiplyColor;
-		public Color4 Color;
-		public Vector3 Position;
+		public Model ModelParent;
 
 		public Mesh(int Len, bool Transparent = false) {
 			Verts = new Vertex[Len];
 			Inds = new List<uint>();
 			IsTransparent = Transparent;
-
-			Position = Vector3.Zero;
-			Color = Color4.White;
-			MultiplyColor = true;
 		}
 
 		/*public void Unroll() {
@@ -93,36 +84,34 @@ namespace AGame.Src.Meshes {
 
 		public VAO MeshVAO;
 		public Texture Tex;
-		public ShaderProgram Shader;
 		public bool IsTransparent;
 
-		public void GLInit(ShaderProgram Shader) {
+		public void GLInit() {
 			//Unroll();
 			Inds.Reverse();
 
-			this.Shader = Shader;
 			MeshVAO = new VAO(PrimitiveType.Triangles);
 			Bind();
 
-			if (Shader.PosAttrib >= 0) {
+			if (ShaderProgram.ActiveShader.PosAttrib >= 0) {
 				VBO Positions = new VBO(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw);
 				Positions.Bind();
 				Positions.Data(this.Positions);
-				Positions.VertexAttribPointer(Shader.PosAttrib);
+				Positions.VertexAttribPointer(ShaderProgram.ActiveShader.PosAttrib);
 			}
 
-			if (Shader.NormAttrib >= 0) {
+			if (ShaderProgram.ActiveShader.NormAttrib >= 0) {
 				VBO Normals = new VBO(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw);
 				Normals.Bind();
 				Normals.Data(this.Normals);
-				Normals.VertexAttribPointer(Shader.NormAttrib);
+				Normals.VertexAttribPointer(ShaderProgram.ActiveShader.NormAttrib);
 			}
 
-			if (Shader.UVAttrib >= 0) {
+			if (ShaderProgram.ActiveShader.UVAttrib >= 0) {
 				VBO UVs = new VBO(BufferTarget.ArrayBuffer, BufferUsageHint.StaticDraw);
 				UVs.Bind();
 				UVs.Data(this.UVs);
-				UVs.VertexAttribPointer(Shader.UVAttrib);
+				UVs.VertexAttribPointer(ShaderProgram.ActiveShader.UVAttrib);
 			}
 
 			VBO Elements = new VBO(BufferTarget.ElementArrayBuffer, BufferUsageHint.StaticDraw);
@@ -140,11 +129,12 @@ namespace AGame.Src.Meshes {
 			MeshVAO.Unbind();
 		}
 
-		public void Render() {
+		public void Render(ShaderProgram S) {
 			if (Tex != null)
 				Tex.Bind();
 			Bind();
-			Shader.BindUse(Position, Color, MultiplyColor, () => MeshVAO.DrawElements(Inds.Count));
+			S.Use(ModelParent.Position, ModelParent.Rotation, ModelParent.Scale,
+				ModelParent.Color, ModelParent.MultiplyColor, () => MeshVAO.DrawElements(Inds.Count));
 			Unbind();
 			if (Tex != null)
 				Tex.Unbind();

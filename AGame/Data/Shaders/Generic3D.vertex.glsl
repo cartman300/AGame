@@ -1,23 +1,29 @@
 ﻿#version 150
 
 uniform mat4 Matrix;
+uniform mat4 ModelMatrix;
+uniform mat4 NormMatrix;
 
 in vec3 vert_pos;
 in vec3 vert_norm;
 in vec2 vert_uv;
 
 out vec2 frag_uv;
+out vec3 frag_vertex;
+out vec3 frag_vertex_raw;
+out vec3 frag_normal;
 
-out vec3 V;
-out vec3 N;
+vec3 project(mat4 M, vec3 V) {
+	return (M * vec4(V, 1.0)).xyz;
+}
 
 void main() {
-	mat4 NormMatrix = transpose(inverse(Matrix));
-
-	V = (Matrix * vec4(vert_pos, 1.0)).xyz;
-	N = normalize(NormMatrix * vec4(vert_norm, 1.0)).xyz;
+	vec3 normal = project(NormMatrix, vert_norm);
+	vec4 vert = Matrix * vec4(vert_pos, 1.0);
 
 	frag_uv = vert_uv;
-
-	gl_Position = Matrix * vec4(vert_pos, 1.0);
+	frag_vertex = vert.xyz;
+	frag_vertex_raw = vert_pos;
+	frag_normal = normal;
+	gl_Position = vert;
 }

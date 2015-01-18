@@ -16,6 +16,12 @@ namespace AGame.Src.OGL {
 			throw new NotImplementedException();
 		}
 
+		public virtual void Use(Action A) {
+			Bind();
+			A();
+			Unbind();
+		}
+
 		public virtual void Unbind() {
 			throw new NotImplementedException();
 		}

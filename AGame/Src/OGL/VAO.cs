@@ -29,6 +29,15 @@ namespace AGame.Src.OGL {
 			GL.BindVertexArray(0);
 		}
 
+		public void DisableAttrib(int Idx) {
+			GL.DisableVertexAttribArray(Idx);
+		}
+
+		public void DisableAttrib(int Idx, Vector4 Val) {
+			DisableAttrib(Idx);
+			GL.VertexAttrib4(Idx, ref Val);
+		}
+
 		public void DrawArrays(int First, int Count) {
 			GL.DrawArrays(Primitive, First, Count);
 		}
