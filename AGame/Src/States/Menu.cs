@@ -83,7 +83,7 @@ namespace AGame.Src.States {
 
 		public override void RenderGUI(float T) {
 			// TODO: Remove hardcoded position
-			Engine.Text2D.Use(new Vector3(100, 200, 0), Quaternion.FromAxisAngle(Vector3.UnitZ, 0),
+			Engine.Text2D.Use(new Vector3(100, 200, 0), Quaternion.FromAxisAngle(Vector3.UnitZ, -0.1f),
 				1.0f, Color4.White, true, MenuText.Render);
 		}
 	}

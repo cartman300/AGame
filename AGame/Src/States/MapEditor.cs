@@ -91,13 +91,13 @@ namespace AGame.Src.States {
 		}
 
 		public override void RenderOpaque(float T) {
-			Camera Cam = Engine.Generic3D.Cam;
+			/*Camera Cam = Engine.Generic3D.Cam;
 			Vector3 Pos = Cam.GetPosition() + Cam.GetForward() * 100;
-			Dice.Position = Pos.GridClamp(new Vector3(20, 20, 20));
+			Dice.Position = Pos.GridClamp(new Vector3(20, 20, 20));*/
 
 			Missile.RenderOpaque();
-			Missile2.RenderOpaque();
-			Dice.RenderOpaque();
+			//Missile2.RenderOpaque();
+			//Dice.RenderOpaque();
 		}
 	}
 }

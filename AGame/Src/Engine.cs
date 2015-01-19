@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.IO;
+using Stopwatch = System.Diagnostics.Stopwatch;
 using FCursor = System.Windows.Forms.Cursor;
 
 using OpenTK;
@@ -27,6 +28,13 @@ namespace AGame.Src {
 		public static ShaderProgram Generic2D;
 		public static ShaderProgram Text2D;
 		public static ShaderProgram Generic3D;
+
+		Stopwatch SWatch;
+		public float Time {
+			get {
+				return (float)SWatch.ElapsedMilliseconds / 1000f;
+			}
+		}
 
 		public Vector2 Resolution;
 		States.Debug DebugState;
@@ -54,6 +62,9 @@ namespace AGame.Src {
 			ModelLoaders.Add(new ObjLoader());
 
 			MouseEnabled = true;
+
+			SWatch = new Stopwatch();
+			SWatch.Start();
 			ToggleMouse();
 		}
 
@@ -97,7 +108,8 @@ namespace AGame.Src {
 			});
 
 			Generic3D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic3D.vertex.glsl"),
+				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic3D.vertex.glsl"),	
+				new Shader(ShaderType.GeometryShader, "Data/Shaders/Explode.geometry.glsl"),
 				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic3D.fragment.glsl"),
 			});
 

@@ -28,7 +28,7 @@ void main() {
 	TexClr *= max(Ambient, vec4(LStren, LStren, LStren, 1.0));
 
 	if (MultColor == 0)
-		Color = TexClr + ObjColor;
+		Color = (TexClr + ObjColor);
 	else
-		Color = TexClr * ObjColor;
+		Color = (TexClr * ObjColor);
 }
