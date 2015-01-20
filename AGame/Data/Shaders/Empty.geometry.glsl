@@ -6,7 +6,7 @@ uniform mat4 ModelMatrix;
 uniform mat4 NormMatrix;
 
 layout(triangles) in;
-layout(triangle_strip, max_vertices = 9) out;
+layout(triangle_strip, max_vertices = 3) out;
 
 in vec3 vert_pos[];
 in vec3 vert_norm[];
@@ -24,24 +24,13 @@ out vec3 frag_normal;
 
 #define MAP(a, b) a = b[i]
 
-vec4 Pos(int I) {
-	return gl_in[I].gl_Position;
-}
-
 void main() {
-	vec4 V = Pos(1) - Pos(0);
-	vec4 W = Pos(2) - Pos(0);
-	vec3 Norm = -normalize(vec3((V.y * W.z) - (V.z * W.y), (V.z * W.x) - (V.x * W.z), (V.x * W.y) - (V.y * W.x)));
-
 	for(int i = 0; i < gl_VerticesIn; i++) {
-		vec4 Pos = Pos(i);
 		MAP(frag_uv, geom_uv);
 		MAP(frag_vertex, geom_vertex);
 		MAP(frag_vertex_raw, geom_vertex_raw);
 		MAP(frag_normal, geom_normal);
-
-		float s = clamp(sin(Time * 0.8) * 4, 0.0, 3.0) * 5;
-		gl_Position = vec4(Pos.xyz + Norm * s, Pos.w);
+		gl_Position = gl_in[i].gl_Position;
 		EmitVertex();
 	}
 	EndPrimitive();

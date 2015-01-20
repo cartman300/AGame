@@ -132,6 +132,9 @@
     <None Include="Data\Fonts\VeraMono.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Data\Shaders\Empty.geometry.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Data\Shaders\Explode.geometry.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -109,7 +109,7 @@ namespace AGame.Src {
 
 			Generic3D = CreateShader(new Shader[] {
 				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic3D.vertex.glsl"),	
-				new Shader(ShaderType.GeometryShader, "Data/Shaders/Explode.geometry.glsl"),
+				new Shader(ShaderType.GeometryShader, "Data/Shaders/Empty.geometry.glsl"),
 				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic3D.fragment.glsl"),
 			});
 
