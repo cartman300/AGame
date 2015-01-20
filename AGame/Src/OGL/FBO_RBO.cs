@@ -15,27 +15,19 @@ namespace AGame.Src.OGL {
 		}
 
 		public void Attach(FramebufferAttachment A, Texture T) {
-			Bind();
 			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, A, T.Target, T.ID, 0);
-			Unbind();
 		}
 
 		public void Attach(FramebufferAttachment A, RBO R) {
-			Bind();
 			GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, A, RenderbufferTarget.Renderbuffer, R.ID);
-			Unbind();
 		}
 
 		public void Detach(FramebufferAttachment A, Texture T) {
-			Bind();
 			GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, A, T.Target, 0, 0);
-			Unbind();
 		}
 
 		public void Detach(FramebufferAttachment A, RBO R) {
-			Bind();
 			GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, A, RenderbufferTarget.Renderbuffer, 0);
-			Unbind();
 		}
 
 		public override void Delete() {

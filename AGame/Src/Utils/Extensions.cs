@@ -56,9 +56,11 @@ namespace AGame.Utils {
 				Atlas.BindTo(TextureUnit.Texture0);
 				Atlas.Wrapping(Texture.Wrap.X, Texture.WrapMode.ClampToEdge);
 				Atlas.Wrapping(Texture.Wrap.Y, Texture.WrapMode.ClampToEdge);
-				Atlas.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.Linear);
-				Atlas.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.Linear);
+				Atlas.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.LinearMipmapLinear);
+				Atlas.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.LinearMipmapLinear);
 				Atlas.Load(Fnt.FontAtlas);
+				Fnt.FontAtlas.Save("file.png");
+				Atlas.GenerateMipmap();
 				Fnt.Userdata = Atlas;
 			}
 			return (Texture)Fnt.Userdata;

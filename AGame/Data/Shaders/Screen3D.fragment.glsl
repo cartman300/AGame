@@ -50,5 +50,4 @@ vec4 FXAA(sampler2D TEX, vec2 oUV) {
 
 void main() {
 	Color = FXAA(tex, frag_uv);
-	//Color = texture2D(tex, frag_uv);
 }

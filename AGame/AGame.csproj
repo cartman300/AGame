@@ -90,6 +90,7 @@
     <Compile Include="Src\OGL\GLObject.cs" />
     <Compile Include="Src\OGL\GraphicsTexture.cs" />
     <Compile Include="Src\OGL\Quads2D.cs" />
+    <Compile Include="Src\OGL\RenderTarget.cs" />
     <Compile Include="Src\OGL\Shader.cs" />
     <Compile Include="Src\OGL\ShaderProgram.cs" />
     <Compile Include="Src\OGL\Texture.cs" />
@@ -132,13 +133,16 @@
     <None Include="Data\Fonts\VeraMono.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Data\Shaders\ScreenFull.fragment.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Data\Shaders\Empty.geometry.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Data\Shaders\Explode.geometry.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\Screen.fragment.glsl">
+    <None Include="Data\Shaders\Screen3D.fragment.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Data\Shaders\Generic3D.fragment.glsl">

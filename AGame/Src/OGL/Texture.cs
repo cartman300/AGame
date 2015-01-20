@@ -78,7 +78,7 @@ namespace AGame.Src.OGL {
 			this.Target = Target;
 		}
 
-		public static Texture FromFile(string Path, Texture.FilterMode FMode = FilterMode.Linear) {
+		public static Texture FromFile(string Path, Texture.FilterMode FMode = FilterMode.LinearMipmapLinear) {
 			Texture Atlas = new Texture(TextureTarget.Texture2D);
 			Atlas.BindTo(TextureUnit.Texture0);
 			Atlas.Wrapping(Texture.Wrap.X, Texture.WrapMode.Repeat);
@@ -86,6 +86,7 @@ namespace AGame.Src.OGL {
 			Atlas.Filtering(Texture.Filter.DownScaled, FMode);
 			Atlas.Filtering(Texture.Filter.UpScaled, FMode);
 			Atlas.Load(Bitmap.FromFile(Path));
+			Atlas.GenerateMipmap();
 			Atlas.Unbind();
 			return Atlas;
 		}

@@ -24,7 +24,8 @@ namespace AGame.Src {
 	class Engine : GameWindow {
 		public static Engine Game;
 
-		public static ShaderProgram ScreenShader;
+		public static ShaderProgram ScreenShader3D;
+		public static ShaderProgram ScreenShaderFull;
 		public static ShaderProgram Generic2D;
 		public static ShaderProgram Text2D;
 		public static ShaderProgram Generic3D;
@@ -102,9 +103,14 @@ namespace AGame.Src {
 				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic2D.fragment.glsl"),
 			});
 
-			ScreenShader = CreateShader(new Shader[] {
+			ScreenShader3D = CreateShader(new Shader[] {
 				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/Screen.fragment.glsl"),
+				new Shader(ShaderType.FragmentShader, "Data/Shaders/Screen3D.fragment.glsl"),
+			});
+
+			ScreenShaderFull = CreateShader(new Shader[] {
+				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
+				new Shader(ShaderType.FragmentShader, "Data/Shaders/ScreenFull.fragment.glsl"),
 			});
 
 			Generic3D = CreateShader(new Shader[] {
@@ -123,32 +129,14 @@ namespace AGame.Src {
 			Generic2D.Cam = new Camera();
 			Generic2D.Cam.Projection = Matrix4.CreateOrthographic(Resolution.X, -Resolution.Y, -1, 1);
 			Generic2D.Cam.Translation = Offset;
-			ScreenShader.Cam = Text2D.Cam = Generic2D.Cam;
+			ScreenShaderFull.Cam = ScreenShader3D.Cam = Text2D.Cam = Generic2D.Cam;
 
 			float FOV = 90f * (float)Math.PI / 180f;
 			Generic3D.Cam = new Camera();
 			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Resolution.X / Resolution.Y, 1, 1000);
 
-			ColorTex = new Texture(TextureTarget.Texture2D);
-			ColorTex.Use(() => {
-				ColorTex.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.Nearest);
-				ColorTex.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.Nearest);
-				ColorTex.TexImage2D(0, PixelInternalFormat.Rgba, (int)Resolution.X, (int)Resolution.Y, PixelFormat.Rgba);
-				//ColorTex.TexImage2DMultisample(PixelInternalFormat.Rgba, (int)Resolution.X, (int)Resolution.Y);
-			});
-
-			DSTex = new Texture(TextureTarget.Texture2D);
-			DSTex.Use(() => {
-				DSTex.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.Nearest);
-				DSTex.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.Nearest);
-				DSTex.TexImage2D(0, PixelInternalFormat.Depth24Stencil8, (int)Resolution.X, (int)Resolution.Y,
-					PixelFormat.DepthStencil, PixelType.UnsignedInt248, IntPtr.Zero);
-			});
-
-			Scr = new FBO();
-			Scr.Attach(FramebufferAttachment.ColorAttachment0, ColorTex);
-			Scr.Attach(FramebufferAttachment.DepthStencilAttachment, DSTex);
-
+			Scr3D = new RenderTarget((int)Resolution.X, (int)Resolution.Y, true);
+			ScrFull = new RenderTarget((int)Resolution.X, (int)Resolution.Y);
 			ScrQuad = new Quads2D();
 			ScrQuad.SetData(Quads2D.Quad(0, 0, Resolution.X, Resolution.Y), Quads2D.Quad(0, 1, 1, -1));
 		}
@@ -226,15 +214,14 @@ namespace AGame.Src {
 			DebugState.Update((float)E.Time);
 		}
 
-		FBO Scr;
-		Texture ColorTex, DSTex;
+		RenderTarget Scr3D, ScrFull;
 		Quads2D ScrQuad;
 
 		protected override void OnRenderFrame(FrameEventArgs E) {
 			base.OnRenderFrame(E);
 			float Time = (float)E.Time;
 
-			Scr.RenderTo(() => {
+			Scr3D.RenderTo(() => {
 				GL.ClearColor(new Color4(42, 42, 42, 255));
 				GL.Clear(ClearBufferMask.ColorBufferBit);
 				GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -250,12 +237,16 @@ namespace AGame.Src {
 				DebugState.Render3D(Time);
 			});
 
-			GL.Disable(EnableCap.DepthTest);
-			ColorTex.Use(() => ScreenShader.Use(ScrQuad.Render));
-			ActiveState.PreRenderGUI(Time);
-			ActiveState.RenderGUI(Time);
-			ActiveState.PostRenderGUI(Time);
-			DebugState.RenderGUI(Time);
+			ScrFull.RenderTo(() => {
+				GL.Disable(EnableCap.DepthTest);
+				Scr3D.UseColor(() => ScreenShader3D.Use(ScrQuad.Render));
+				ActiveState.PreRenderGUI(Time);
+				ActiveState.RenderGUI(Time);
+				ActiveState.PostRenderGUI(Time);
+				DebugState.RenderGUI(Time);
+			});
+
+			ScrFull.UseColor(() => ScreenShaderFull.Use(ScrQuad.Render));
 
 			SwapBuffers();
 		}
