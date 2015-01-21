@@ -133,7 +133,10 @@
     <None Include="Data\Fonts\VeraMono.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\ScreenFull.fragment.glsl">
+    <None Include="Data\Shaders\Screen.fragment.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\Shaders\Parts\fxaa.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Data\Shaders\Empty.geometry.glsl">
@@ -142,25 +145,19 @@
     <None Include="Data\Shaders\Explode.geometry.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\Screen3D.fragment.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Data\Shaders\Generic3D.fragment.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\Generic3D.vertex.glsl">
+    <None Include="Data\Shaders\Generic.vertex.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Data\Shaders\Text2D.fragment.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\Text2D.vertex.glsl">
+    <None Include="Data\Shaders\Generic.fragment.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Data\Shaders\Generic2D.fragment.glsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Data\Shaders\Generic2D.vertex.glsl">
+    <None Include="Data\Shaders\Parts\utils.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
@@ -189,6 +186,7 @@
     </Content>
     <Content Include="ico.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

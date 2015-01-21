@@ -12,28 +12,46 @@ using OpenTK.Graphics.OpenGL4;
 namespace AGame.Src.OGL {
 	class Shader : GLObject {
 		internal List<ShaderProgram> Programs;
-
 		public ShaderType SType;
-		public bool Dirty;
-		public FileSystemWatcher FileWatcher;
+		public string ShaderFile;
 
-		string Dir, Fil, Pth;
+		public static string GetShaderPath(string ShaderName) {
+			return "Data/Shaders/" + ShaderName + ".glsl";
+		}
 
-		public Shader(ShaderType SType, string Pth) {
-			Pth = Pth.Replace('\\', '/');
+		void Load(ShaderType SType, string Source, string Path) {
+			Path = Path.Replace('\\', '/');
 
 			this.SType = SType;
 			ID = GL.CreateShader(SType);
 			Programs = new List<ShaderProgram>();
-			Dirty = true;
 
-			Dir = Path.GetFullPath(Pth.Substring(0, Pth.LastIndexOf('/')));
-			Fil = Pth.Substring(Pth.LastIndexOf('/') + 1);
-			this.Pth = Path.Combine(Dir, Fil);
+			ShaderFile = Path.Substring(Path.LastIndexOf('/') + 1);
+			Compile(Source);
+		}
 
-			FileWatcher = new FileSystemWatcher(Dir, Fil);
-			FileWatcher.Changed += (S, E) => Dirty = true;
-			FileWatcher.EnableRaisingEvents = true;
+		void Load(ShaderType SType, string Path) {
+			Load(SType, File.ReadAllText(Path), Path);
+		}
+
+		public Shader(ShaderType SType, string Source, string Path) {
+			Load(SType, Source, Path);
+		}
+
+		public Shader(string ShaderName) {
+			ShaderType T = ShaderType.FragmentShader;
+			if (ShaderName.EndsWith("vertex"))
+				T = ShaderType.VertexShader;
+			else if (ShaderName.EndsWith("fragment"))
+				T = ShaderType.FragmentShader;
+			else if (ShaderName.EndsWith("geometry"))
+				T = ShaderType.GeometryShader;
+
+			Load(T, GetShaderPath(ShaderName));
+		}
+
+		public Shader(ShaderType SType, string ShaderName) {
+			Load(SType, GetShaderPath(ShaderName));
 		}
 
 		public override void Delete() {
@@ -58,10 +76,6 @@ namespace AGame.Src.OGL {
 				Detach(Programs[i]);
 		}
 
-		public void Recompile() {
-			Compile(File.ReadAllText(Pth));
-		}
-
 		public void Compile(string Src) {
 			GL.ShaderSource(ID, Src);
 			GL.CompileShader(ID);
@@ -70,7 +84,7 @@ namespace AGame.Src.OGL {
 			GL.GetShader(ID, ShaderParameter.CompileStatus, out Status);
 
 			if (Status != 1)
-				throw new Exception(string.Format("Exception in shader {0}\n{1}", Fil, GL.GetShaderInfoLog(ID)).Trim());
+				throw new Exception(string.Format("Exception in shader {0}\n{1}", ShaderFile, GL.GetShaderInfoLog(ID)).Trim());
 		}
 	}
 }

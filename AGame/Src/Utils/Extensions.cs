@@ -59,7 +59,7 @@ namespace AGame.Utils {
 				Atlas.Filtering(Texture.Filter.DownScaled, Texture.FilterMode.LinearMipmapLinear);
 				Atlas.Filtering(Texture.Filter.UpScaled, Texture.FilterMode.LinearMipmapLinear);
 				Atlas.Load(Fnt.FontAtlas);
-				Fnt.FontAtlas.Save("file.png");
+				//Fnt.FontAtlas.Save("file.png");
 				Atlas.GenerateMipmap();
 				Fnt.Userdata = Atlas;
 			}

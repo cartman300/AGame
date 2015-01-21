@@ -1,15 +1,4 @@
-﻿#version 150
-
-uniform sampler2D tex;
-uniform int MultColor;
-uniform vec4 ObjColor;
-uniform vec2 Resolution;
-
-in vec2 frag_uv;
-
-out vec4 Color;
-
-vec4 FXAA(sampler2D TEX, vec2 oUV) {
+﻿vec4 FXAA(sampler2D TEX, vec2 oUV, vec2 Resolution) {
 	float FXAA_SPAN_MAX = 8.0;
 	float FXAA_REDUCE_MUL = 1.0 / 8.0;
 	float FXAA_REDUCE_MIN = (1.0 / 128.0);
@@ -46,8 +35,4 @@ vec4 FXAA(sampler2D TEX, vec2 oUV) {
 		return rgbA;
 	else
 		return rgbB;
-}
-
-void main() {
-	Color = FXAA(tex, frag_uv);
 }

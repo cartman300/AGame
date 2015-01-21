@@ -98,31 +98,32 @@ namespace AGame.Src {
 			GL.Enable(EnableCap.DepthTest);
 			GL.DepthFunc(DepthFunction.Less);
 
-			Generic2D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic2D.fragment.glsl"),
-			});
+			Generic2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
-			ScreenShader3D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/Screen3D.fragment.glsl"),
-			});
+			Text2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv").AddInput("vec4", "clr")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Text2D.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
-			ScreenShaderFull = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic2D.vertex.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/ScreenFull.fragment.glsl"),
-			});
+			Generic3D = Finalize(CreateShader().AddInput("vec3", "pos", "norm").AddInput("vec2", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				//.AddShader(ShaderType.GeometryShader, ShaderType.FragmentShader, "Explode.geometry")
+				.AddShader(ShaderType.FragmentShader, null, "Generic3D.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
-			Generic3D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader, "Data/Shaders/Generic3D.vertex.glsl"),	
-				new Shader(ShaderType.GeometryShader, "Data/Shaders/Empty.geometry.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/Generic3D.fragment.glsl"),
-			});
+			ScreenShader3D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Screen.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true)
+				.AddShader(ShaderType.FragmentShader, null, "Parts/fxaa", true));
 
-			Text2D = CreateShader(new Shader[] {
-				new Shader(ShaderType.VertexShader,"Data/Shaders/Text2D.vertex.glsl"),
-				new Shader(ShaderType.FragmentShader, "Data/Shaders/Text2D.fragment.glsl"),
-			});
+			ScreenShaderFull = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
 			Matrix4 Offset = Matrix4.CreateTranslation(-Resolution.X / 2, -Resolution.Y / 2, 0);
 
@@ -145,11 +146,18 @@ namespace AGame.Src {
 			return new Point(Location.X + (Size.Width / 2), Location.Y + (Size.Height / 2));
 		}
 
-		ShaderProgram CreateShader(Shader[] S) {
-			ShaderProgram Prog = new ShaderProgram(S);
-			Prog.BindFragDataLocation(0, "Color");
-			Prog.Bind();
-			return Prog;
+		ShaderAssembler CreateShader() {
+			ShaderAssembler ProgAsm = new ShaderAssembler();
+			return ProgAsm.AddUniform("mat4", "Matrix", "ModelMatrix", "NormMatrix").AddUniform("sampler2D", "Texture")
+			.AddUniform("int", "MultColor").AddUniform("vec4", "ObjColor").AddUniform("vec2", "Resolution")
+			.AddUniform("float", "Time");
+		}
+
+		ShaderProgram Finalize(ShaderAssembler SAsm) {
+			ShaderProgram P = SAsm.Assemble();
+			P.BindFragDataLocation(0, "Color");
+			P.Bind();
+			return P;
 		}
 
 		protected override void OnResize(EventArgs e) {

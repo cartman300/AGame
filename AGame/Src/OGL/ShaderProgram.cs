@@ -11,6 +11,100 @@ using OpenTK.Graphics.OpenGL4;
 using VAPT = OpenTK.Graphics.OpenGL4.VertexAttribPointerType;
 
 namespace AGame.Src.OGL {
+	class ShaderAssembler {
+		string Version;
+		List<Tuple<string, string>> Inputs, Uniforms;
+		List<Shader> Shaders;
+
+		public ShaderAssembler(string Version = "150") {
+			this.Version = Version;
+			Inputs = new List<Tuple<string, string>>();
+			Uniforms = new List<Tuple<string, string>>();
+			Shaders = new List<Shader>();
+		}
+
+		public ShaderAssembler AddUniform(string UniType, params string[] UniName) {
+			for (int i = 0; i < UniName.Length; i++)
+				Uniforms.Add(new Tuple<string, string>(UniType, UniName[i]));
+			return this;
+		}
+
+		public ShaderAssembler AddInput(string InType, params string[] InName) {
+			for (int i = 0; i < InName.Length; i++)
+				Inputs.Add(new Tuple<string, string>(InType, InName[i]));
+			return this;
+		}
+
+		static string GetPrefix(ShaderType T) {
+			switch (T) {
+				case ShaderType.ComputeShader:
+					return "compute_";
+				case ShaderType.FragmentShader:
+					return "frag_";
+				case ShaderType.GeometryShader:
+					return "geom_";
+				case ShaderType.TessControlShader:
+					return "tessctrl_";
+				case ShaderType.TessEvaluationShader:
+					return "tesseval_";
+				case ShaderType.VertexShader:
+					return "vert_";
+				default:
+					throw new Exception("Unknown shader type " + T.ToString());
+			}
+		}
+
+		static string CreateInput(ShaderType T, ShaderType? Next, string Type, string Name) {
+			string I = "in " + Type + " " + GetPrefix(T) + Name;
+			if (T == ShaderType.GeometryShader)
+				I += "[]";
+			I += ";\n";
+			I += "#define __" + Name + " " + GetPrefix(T) + Name + "\n";
+			I += "#define typeof__" + Name + " " + Type + "\n";
+			if (Next.HasValue) {
+				I += "out " + Type + " " + GetPrefix(Next.Value) + Name + ";\n";
+				I += "#define " + Name + "__ " + GetPrefix(Next.Value) + Name + "\n";
+			}
+			return I;
+		}
+
+		public string GetMappings(ShaderType T, ShaderType Next) {
+			string Mappings = "";
+			for (int i = 0; i < Inputs.Count; i++) {
+				Mappings += GetPrefix(Next) + Inputs[i].Item2 + " = " + GetPrefix(T) + Inputs[i].Item2;
+				if (T == ShaderType.GeometryShader)
+					Mappings += "[i]";
+				Mappings += ";\n";
+			}
+			return Mappings;
+		}
+
+		public ShaderAssembler AddShader(ShaderType T, ShaderType? Next, string ShaderName, bool IsPart = false) {
+			StringBuilder Src = new StringBuilder();
+			Src.AppendFormat("#version {0}\n", Version);
+
+			if (!IsPart) {
+				for (int i = 0; i < Uniforms.Count; i++)
+					Src.AppendFormat("uniform {0} {1};\n", Uniforms[i].Item1, Uniforms[i].Item2);
+
+				for (int i = 0; i < Inputs.Count; i++)
+					Src.Append(CreateInput(T, Next, Inputs[i].Item1, Inputs[i].Item2));
+			}
+
+			Src.Append(File.ReadAllText(Shader.GetShaderPath(ShaderName)));
+			if (!IsPart && Next.HasValue)
+				Src.Replace("///MAPPINGS", GetMappings(T, Next.Value));
+
+			//Console.WriteLine("{0}\n\n", Src.ToString());
+			Shaders.Add(new Shader(T, Src.ToString(), ShaderName));
+			return this;
+		}
+
+		public ShaderProgram Assemble() {
+			return new ShaderProgram(Shaders.ToArray());
+		}
+	}
+
 	class ShaderProgram : GLObject {
 		const string VertShader_Pos = "vert_pos";
 		const string VertShader_Norm = "vert_norm";
@@ -100,6 +194,7 @@ namespace AGame.Src.OGL {
 
 			for (int i = 0; i < Shaders.Length; i++)
 				Shaders[i].Attach(this);
+			Link();
 		}
 
 		void Create() {
@@ -125,29 +220,9 @@ namespace AGame.Src.OGL {
 		}
 
 		public override void Bind() {
-			if (Shaders.Any((S) => S.Dirty)) {
-				for (int i = 0; i < Shaders.Length; i++)
-					if (Shaders[i].Dirty) {
-						bool DoRecompile = true;
-						while (DoRecompile) {
-							try {
-								Console.WriteLine("Reloading {0}", Shaders[i].FileWatcher.Filter);
-								Shaders[i].Recompile();
-								Shaders[i].Dirty = false;
-								DoRecompile = false;
-							} catch (Exception E) {
-								Console.WriteLine(E.Message);
-								DoRecompile = true;
-								Shaders[i].FileWatcher.WaitForChanged(WatcherChangeTypes.All);
-							}
-						}
-					}
-				Link();
-			}
-
-			SetUniform("Time", Engine.Game.Time);
 			LastActive = ActiveShader = this;
-			GL.UseProgram(ID);
+			GL.UseProgram(ID);	
+			SetUniform("Time", Engine.Game.Time);
 			Resolution = Engine.Game.Resolution;
 			if (Cam != null) {
 				ModelMatrix = Modelview;
