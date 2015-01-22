@@ -94,14 +94,15 @@ namespace AGame.Src {
 
 		ShaderAssembler CreateShader() {
 			ShaderAssembler ProgAsm = new ShaderAssembler();
-			return ProgAsm.AddUniform("mat4", "Matrix", "ModelMatrix", "NormMatrix").AddUniform("sampler2D", "Texture")
-			.AddUniform("int", "MultColor").AddUniform("vec4", "ObjColor").AddUniform("vec2", "Resolution")
-			.AddUniform("float", "Time").AddUniform("sampler3D", "VoxWorld");
+			return ProgAsm.AddUniform("mat4", "Matrix", "ModelMatrix", "NormMatrix")
+				.AddUniform("sampler2D", "Texture"/*, "NormalTexture"*/) .AddUniform("int", "MultColor")
+				.AddUniform("vec4", "ObjColor").AddUniform("vec2", "Resolution").AddUniform("float", "Time");
 		}
 
 		ShaderProgram Finalize(ShaderAssembler SAsm) {
 			ShaderProgram P = SAsm.Assemble();
 			P.BindFragDataLocation(0, "Color");
+			//P.BindFragDataLocation(1, "NormalColor");
 			P.Bind();
 			return P;
 		}
@@ -220,28 +221,8 @@ namespace AGame.Src {
 			ScrFull = new RenderTarget((int)Resolution.X, (int)Resolution.Y);
 			ScrQuad = new Quads2D();
 			ScrQuad.SetData(Quads2D.Quad(0, 0, Resolution.X, Resolution.Y), Quads2D.Quad(0, 1, 1, -1));
-
-			VoxWorld = new Texture(TextureTarget.Texture3D);
-			VoxWorld.Use(() => {
-				VoxWorld.Filtering(Texture.Filter.MinFilter, Texture.FilterMode.Nearest);
-				VoxWorld.Filtering(Texture.Filter.MagFilter, Texture.FilterMode.Nearest);
-				VoxWorld.Wrapping(Texture.Wrap.S, Texture.WrapMode.Repeat);
-				VoxWorld.Wrapping(Texture.Wrap.T, Texture.WrapMode.Repeat);
-				VoxWorld.Wrapping(Texture.Wrap.R, Texture.WrapMode.Repeat);
-
-				Random R = new Random();
-				const int WorldSize = 100;
-				byte[] Bytes = new byte[WorldSize * WorldSize * WorldSize];
-				R.NextBytes(Bytes);
-
-				fixed (byte* BytesPtr = Bytes)
-					VoxWorld.TexImage3D(0, PixelInternalFormat.R16, WorldSize, WorldSize, WorldSize, PixelFormat.Red,
-						PixelType.UnsignedByte, new IntPtr(BytesPtr));
-				//VoxWorld.Unbind();
-			});
 		}
 
-		Texture VoxWorld;
 		RenderTarget Scr3D, ScrFull;
 		Quads2D ScrQuad;
 
@@ -267,12 +248,7 @@ namespace AGame.Src {
 
 			ScrFull.RenderTo(() => {
 				GL.Disable(EnableCap.DepthTest);
-				VoxWorld.Bind();
-				Scr3D.UseColor(() => ScreenShader3D.Use(() => {
-					Matrix4 Mat3D = Generic3D.Cam.Collapse();
-					ScreenShader3D.SetUniform("Matrix3D", ref Mat3D);
-					ScrQuad.Render();
-				}));
+				Scr3D.UseColor(() => ScreenShader3D.Use(ScrQuad.Render));
 				ActiveState.PreRenderGUI(Time);
 				ActiveState.RenderGUI(Time);
 				ActiveState.PostRenderGUI(Time);

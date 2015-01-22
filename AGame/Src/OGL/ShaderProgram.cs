@@ -117,6 +117,8 @@ namespace AGame.Src.OGL {
 		const string UniformMultColor = "MultColor";
 		const string UniformColor = "ObjColor";
 		const string UniformResolution = "Resolution";
+		const string UniformTexture = "Texture";
+		//const string UniformNormalTexture = "NormalTexture";
 
 		public static ShaderProgram ActiveShader, LastActive;
 
@@ -126,6 +128,18 @@ namespace AGame.Src.OGL {
 				SetUniform(UniformMatrix, ref M);
 			}
 		}
+
+		public Texture Texture {
+			set {
+				SetUniform(UniformTexture, value.ID);
+			}
+		}
+
+		/*public Texture NormalTexture {
+			set {
+				SetUniform(UniformNormalTexture, value.ID);
+			}
+		}*/
 
 		public Vector2 Resolution {
 			set {
@@ -262,31 +276,31 @@ namespace AGame.Src.OGL {
 		public void SetUniform(string Name, int Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.Uniform1(Loc, Val);
+				GL.ProgramUniform1(ID, Loc, Val);
 		}
 
 		public void SetUniform(string Name, Vector2 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.Uniform2(Loc, Val);
+				GL.ProgramUniform2(ID, Loc, Val.X, Val.Y);
 		}
 
 		public void SetUniform(string Name, Vector3 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.Uniform3(Loc, Val);
+				GL.ProgramUniform3(ID, Loc, Val.X, Val.Y, Val.Z);
 		}
 
 		public void SetUniform(string Name, float Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.Uniform1(Loc, Val);
+				GL.ProgramUniform1(ID, Loc, Val);
 		}
 
 		public void SetUniform(string Name, Vector4 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.Uniform4(Loc, Val);
+				GL.ProgramUniform4(ID, Loc, Val.X, Val.Y, Val.Z, Val.W);
 		}
 
 		public void SetUniform(string Name, Color4 Val) {

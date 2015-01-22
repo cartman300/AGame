@@ -11,7 +11,7 @@ using OpenTK.Input;
 
 namespace AGame.Src.OGL {
 	class RenderTarget {
-		public Texture ColorTex, DSTex;
+		public Texture ColorTex, DSTex/*, NormalTex*/;
 		public FBO FrameBuffer;
 
 		void WrappingFiltering(Texture Tex) {
@@ -28,6 +28,12 @@ namespace AGame.Src.OGL {
 				ColorTex.TexImage2D(0, PixelInternalFormat.Rgba, W, H, PixelFormat.Rgba);
 			});
 
+			/*NormalTex = new Texture(TextureTarget.Texture2D);
+			NormalTex.Use(() => {
+				WrappingFiltering(NormalTex);
+				ColorTex.TexImage2D(0, PixelInternalFormat.Rgba, W, H, PixelFormat.Rgba);
+			});*/
+
 			if (UseDepth) {
 				DSTex = new Texture(TextureTarget.Texture2D);
 				DSTex.Use(() => {
@@ -40,6 +46,7 @@ namespace AGame.Src.OGL {
 			FrameBuffer = new FBO();
 			FrameBuffer.Use(() => {
 				FrameBuffer.Attach(FramebufferAttachment.ColorAttachment0, ColorTex);
+				//FrameBuffer.Attach(FramebufferAttachment.ColorAttachment1, NormalTex);
 				if (UseDepth)
 					FrameBuffer.Attach(FramebufferAttachment.DepthStencilAttachment, DSTex);
 			});
@@ -48,6 +55,10 @@ namespace AGame.Src.OGL {
 		public void UseColor(Action A) {
 			ColorTex.Use(A);
 		}
+
+		/*public void UseNormal(Action A) {
+			NormalTex.Use(A);
+		}*/
 
 		public void UseDepthStencil(Action A) {
 			if (DSTex != null)

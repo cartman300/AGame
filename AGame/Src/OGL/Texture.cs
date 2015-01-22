@@ -106,6 +106,7 @@ namespace AGame.Src.OGL {
 
 		public override void Unbind() {
 			GL.BindTexture(Target, 0);
+			GL.ActiveTexture(TextureUnit.Texture0);
 		}
 
 		public void GenerateMipmap() {
