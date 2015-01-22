@@ -47,10 +47,10 @@ namespace AGame.Src.States {
 				Engine.Game.ToggleMouse();
 		}
 
-		void MapPos(int X, int Y, int Z) {
+		/*void MapPos(int X, int Y, int Z) {
 			Dice.Position = new Vector3(X * 20, Y * 20, Z * 20).GridClamp(new Vector3(20, 20, 20));
 			Dice.RenderOpaque();
-		}
+		}*/
 
 		public override void OnKey(KeyboardKeyEventArgs K, bool Down) {
 			if (Down) {
@@ -91,13 +91,13 @@ namespace AGame.Src.States {
 		}
 
 		public override void RenderOpaque(float T) {
-			Camera Cam = Engine.Generic3D.Cam;
+			/*Camera Cam = Engine.Generic3D.Cam;
 			Vector3 Pos = Cam.GetPosition() + Cam.GetForward() * 100;
 			Dice.Position = Pos.GridClamp(new Vector3(20, 20, 20));
+			Dice.RenderOpaque();*/
 
 			Missile.RenderOpaque();
 			Missile2.RenderOpaque();
-			Dice.RenderOpaque();
 		}
 	}
 }

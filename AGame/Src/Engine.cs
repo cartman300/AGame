@@ -21,7 +21,7 @@ using AGame.Src.States;
 using AGame.Src.Meshes;
 
 namespace AGame.Src {
-	class Engine : GameWindow {
+	unsafe class Engine : GameWindow {
 		public static Engine Game;
 
 		public static ShaderProgram ScreenShader3D;
@@ -88,60 +88,6 @@ namespace AGame.Src {
 			}
 		}
 
-		public void InitGL() {
-			GL.Enable(EnableCap.Blend);
-			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-			GL.Enable(EnableCap.CullFace);
-			GL.CullFace(CullFaceMode.Back);
-
-			GL.Enable(EnableCap.DepthTest);
-			GL.DepthFunc(DepthFunction.Less);
-
-			Generic2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
-				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
-
-			Text2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv").AddInput("vec4", "clr")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				.AddShader(ShaderType.FragmentShader, null, "Text2D.fragment")
-				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
-
-			Generic3D = Finalize(CreateShader().AddInput("vec3", "pos", "norm").AddInput("vec2", "uv")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				//.AddShader(ShaderType.GeometryShader, ShaderType.FragmentShader, "Explode.geometry")
-				.AddShader(ShaderType.FragmentShader, null, "Generic3D.fragment")
-				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
-
-			ScreenShader3D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				.AddShader(ShaderType.FragmentShader, null, "Screen.fragment")
-				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true)
-				.AddShader(ShaderType.FragmentShader, null, "Parts/fxaa", true));
-
-			ScreenShaderFull = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
-				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
-
-			Matrix4 Offset = Matrix4.CreateTranslation(-Resolution.X / 2, -Resolution.Y / 2, 0);
-
-			Generic2D.Cam = new Camera();
-			Generic2D.Cam.Projection = Matrix4.CreateOrthographic(Resolution.X, -Resolution.Y, -1, 1);
-			Generic2D.Cam.Translation = Offset;
-			ScreenShaderFull.Cam = ScreenShader3D.Cam = Text2D.Cam = Generic2D.Cam;
-
-			float FOV = 90f * (float)Math.PI / 180f;
-			Generic3D.Cam = new Camera();
-			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Resolution.X / Resolution.Y, 1, 1000);
-
-			Scr3D = new RenderTarget((int)Resolution.X, (int)Resolution.Y, true);
-			ScrFull = new RenderTarget((int)Resolution.X, (int)Resolution.Y);
-			ScrQuad = new Quads2D();
-			ScrQuad.SetData(Quads2D.Quad(0, 0, Resolution.X, Resolution.Y), Quads2D.Quad(0, 1, 1, -1));
-		}
-
 		public Point GetWindowCenter() {
 			return new Point(Location.X + (Size.Width / 2), Location.Y + (Size.Height / 2));
 		}
@@ -150,7 +96,7 @@ namespace AGame.Src {
 			ShaderAssembler ProgAsm = new ShaderAssembler();
 			return ProgAsm.AddUniform("mat4", "Matrix", "ModelMatrix", "NormMatrix").AddUniform("sampler2D", "Texture")
 			.AddUniform("int", "MultColor").AddUniform("vec4", "ObjColor").AddUniform("vec2", "Resolution")
-			.AddUniform("float", "Time");
+			.AddUniform("float", "Time").AddUniform("sampler3D", "VoxWorld");
 		}
 
 		ShaderProgram Finalize(ShaderAssembler SAsm) {
@@ -222,6 +168,80 @@ namespace AGame.Src {
 			DebugState.Update((float)E.Time);
 		}
 
+		public void InitGL() {
+			GL.Enable(EnableCap.Blend);
+			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+			GL.Enable(EnableCap.CullFace);
+			GL.CullFace(CullFaceMode.Back);
+
+			GL.Enable(EnableCap.DepthTest);
+			GL.DepthFunc(DepthFunction.Less);
+
+			Generic2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
+
+			Text2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv").AddInput("vec4", "clr")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Text2D.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
+
+			Generic3D = Finalize(CreateShader().AddInput("vec3", "pos", "norm").AddInput("vec2", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				//.AddShader(ShaderType.GeometryShader, ShaderType.FragmentShader, "Explode.geometry")
+				.AddShader(ShaderType.FragmentShader, null, "Generic3D.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
+
+			ScreenShader3D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Screen.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true)
+				.AddShader(ShaderType.FragmentShader, null, "Parts/fxaa", true));
+
+			ScreenShaderFull = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
+				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
+				.AddShader(ShaderType.FragmentShader, null, "Generic.fragment")
+				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
+
+			Matrix4 Offset = Matrix4.CreateTranslation(-Resolution.X / 2, -Resolution.Y / 2, 0);
+
+			Generic2D.Cam = new Camera();
+			Generic2D.Cam.Projection = Matrix4.CreateOrthographic(Resolution.X, -Resolution.Y, -1, 1);
+			Generic2D.Cam.Translation = Offset;
+			ScreenShaderFull.Cam = ScreenShader3D.Cam = Text2D.Cam = Generic2D.Cam;
+
+			float FOV = 90f * (float)Math.PI / 180f;
+			Generic3D.Cam = new Camera();
+			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Resolution.X / Resolution.Y, 1, 1000);
+
+			Scr3D = new RenderTarget((int)Resolution.X, (int)Resolution.Y, true);
+			ScrFull = new RenderTarget((int)Resolution.X, (int)Resolution.Y);
+			ScrQuad = new Quads2D();
+			ScrQuad.SetData(Quads2D.Quad(0, 0, Resolution.X, Resolution.Y), Quads2D.Quad(0, 1, 1, -1));
+
+			VoxWorld = new Texture(TextureTarget.Texture3D);
+			VoxWorld.Use(() => {
+				VoxWorld.Filtering(Texture.Filter.MinFilter, Texture.FilterMode.Nearest);
+				VoxWorld.Filtering(Texture.Filter.MagFilter, Texture.FilterMode.Nearest);
+				VoxWorld.Wrapping(Texture.Wrap.S, Texture.WrapMode.Repeat);
+				VoxWorld.Wrapping(Texture.Wrap.T, Texture.WrapMode.Repeat);
+				VoxWorld.Wrapping(Texture.Wrap.R, Texture.WrapMode.Repeat);
+
+				Random R = new Random();
+				const int WorldSize = 100;
+				byte[] Bytes = new byte[WorldSize * WorldSize * WorldSize];
+				R.NextBytes(Bytes);
+
+				fixed (byte* BytesPtr = Bytes)
+					VoxWorld.TexImage3D(0, PixelInternalFormat.R16, WorldSize, WorldSize, WorldSize, PixelFormat.Red,
+						PixelType.UnsignedByte, new IntPtr(BytesPtr));
+				//VoxWorld.Unbind();
+			});
+		}
+
+		Texture VoxWorld;
 		RenderTarget Scr3D, ScrFull;
 		Quads2D ScrQuad;
 
@@ -247,7 +267,12 @@ namespace AGame.Src {
 
 			ScrFull.RenderTo(() => {
 				GL.Disable(EnableCap.DepthTest);
-				Scr3D.UseColor(() => ScreenShader3D.Use(ScrQuad.Render));
+				VoxWorld.Bind();
+				Scr3D.UseColor(() => ScreenShader3D.Use(() => {
+					Matrix4 Mat3D = Generic3D.Cam.Collapse();
+					ScreenShader3D.SetUniform("Matrix3D", ref Mat3D);
+					ScrQuad.Render();
+				}));
 				ActiveState.PreRenderGUI(Time);
 				ActiveState.RenderGUI(Time);
 				ActiveState.PostRenderGUI(Time);

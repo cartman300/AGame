@@ -118,16 +118,22 @@ namespace AGame.Src.OGL {
 			GL.TexImage2D(Target, Level, PIF, W, H, 0, PF, PT, Data);
 		}
 
-		/*public void TexImage2DMultisample(PixelInternalFormat PIF, int W, int H) {
-			GL.TexImage2DMultisample(TextureTargetMultisample.Texture2DMultisample, 2, PIF, W, H, false);
-		}*/
-
 		public void TexImage2D(int Level, PixelInternalFormat PIF, int W, int H, PixelFormat PF) {
 			TexImage2D(Level, PIF, W, H, PF, PixelType.UnsignedByte, IntPtr.Zero);
 		}
 
 		public void TexSubImage2D(int Level, int X, int Y, int W, int H, PixelFormat PF, PixelType PT, IntPtr Data) {
 			GL.TexSubImage2D(Target, Level, X, Y, W, H, PF, PT, Data);
+		}
+
+		public void TexImage3D(int Level, PixelInternalFormat PIF, int W, int H, int D, PixelFormat PF, PixelType PT, IntPtr Data) {
+			Width = W;
+			Height = H;
+			GL.TexImage3D(Target, Level, PIF, W, H, D, 0, PF, PT, Data);
+		}
+
+		public void TexImage3D(int Level, PixelInternalFormat PIF, int W, int H, int D, PixelFormat PF) {
+			TexImage3D(Level, PIF, W, H, D, PF, PixelType.UnsignedByte, IntPtr.Zero);
 		}
 
 		public void Load(Bitmap Bmp) {

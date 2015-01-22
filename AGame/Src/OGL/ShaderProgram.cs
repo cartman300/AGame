@@ -221,7 +221,7 @@ namespace AGame.Src.OGL {
 
 		public override void Bind() {
 			LastActive = ActiveShader = this;
-			GL.UseProgram(ID);	
+			GL.UseProgram(ID);
 			SetUniform("Time", Engine.Game.Time);
 			Resolution = Engine.Game.Resolution;
 			if (Cam != null) {
@@ -255,59 +255,59 @@ namespace AGame.Src.OGL {
 			return GL.GetAttribLocation(ID, Name);
 		}
 
-		int GetUniformLocation(string Name) {
+		public int GetUniformLocation(string Name) {
 			return GL.GetUniformLocation(ID, Name);
 		}
 
-		void SetUniform(string Name, int Val) {
+		public void SetUniform(string Name, int Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform1(Loc, Val);
 		}
 
-		void SetUniform(string Name, Vector2 Val) {
+		public void SetUniform(string Name, Vector2 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform2(Loc, Val);
 		}
 
-		void SetUniform(string Name, Vector3 Val) {
+		public void SetUniform(string Name, Vector3 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform3(Loc, Val);
 		}
 
-		void SetUniform(string Name, float Val) {
+		public void SetUniform(string Name, float Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform1(Loc, Val);
 		}
 
-		void SetUniform(string Name, Vector4 Val) {
+		public void SetUniform(string Name, Vector4 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform4(Loc, Val);
 		}
 
-		void SetUniform(string Name, Color4 Val) {
+		public void SetUniform(string Name, Color4 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform4(Loc, Val);
 		}
 
-		void SetUniform(string Name, bool Val) {
+		public void SetUniform(string Name, bool Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.Uniform1(Loc, Val ? 1 : 0);
 		}
 
-		void SetUniform(string Name, ref Matrix4 Matrix, bool Transpose = false) {
+		public void SetUniform(string Name, ref Matrix4 Matrix, bool Transpose = false) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
 				GL.UniformMatrix4(Loc, Transpose, ref Matrix);
 		}
 
-		void SetUniform(string Name, TextureUnit Unit) {
+		public void SetUniform(string Name, TextureUnit Unit) {
 			SetUniform(Name, (int)Unit - (int)TextureUnit.Texture0);
 		}
 	}
