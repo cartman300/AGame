@@ -3,28 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
+using AGame.Utils;
 using AGame.Src.OGL;
 using OpenTK;
 using OpenTK.Graphics;
 
+using ProtoBuf;
+
 namespace AGame.Src.Meshes {
+	[ProtoContract]
 	class Model {
+		[ProtoMember(1)]
 		public List<Mesh> Meshes;
 
-		public bool MultiplyColor;
+		[ProtoMember(2, IsPacked = true, OverwriteList = true)]
+		byte[] SerData {
+			get {
+				MemoryStream Str = new MemoryStream();
+				BinaryWriter SW = new BinaryWriter(Str);
+				SW.Write(Color);
+				SW.Write(Position);
+				SW.Write(Scale);
+				SW.Write(Rotation);
+				return Str.ToArray();
+			}
+			set {
+				BinaryReader SR = new BinaryReader(new MemoryStream(value));
+				Color = SR.ReadColor4();
+				Position = SR.ReadVector3();
+				Scale = SR.ReadVector3();
+				Rotation = SR.ReadQuaternion();
+			}
+		}
+
 		public Color4 Color;
 		public Vector3 Position;
-		public float Scale;
+		public Vector3 Scale;
 		public Quaternion Rotation;
+
+		public void Serialize(Stream Str) {
+			Serializer.Serialize<Model>(Str, this);
+		}
+
+		public static Model FromStream(Stream Str) {
+			return Serializer.Deserialize<Model>(Str);
+		}
 
 		public Model() {
 			Meshes = new List<Mesh>();
 
 			Rotation = Quaternion.FromAxisAngle(Vector3.UnitX, 0);
-			MultiplyColor = true;
 			Color = Color4.White;
-			Scale = 1.0f;
+			Scale = new Vector3(1, 1, 1);
 		}
 
 		public void Add(Mesh M) {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.IO;
 using ILM = System.Drawing.Imaging.ImageLockMode;
 using IPixelFormat = System.Drawing.Imaging.PixelFormat;
 using BData = System.Drawing.Imaging.BitmapData;
@@ -14,6 +15,8 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace AGame.Src.OGL {
 	class Texture : GLObject {
+		public static Texture ErrorTexture;
+
 		public enum Wrap {
 			S = TextureParameterName.TextureWrapS,
 			T = TextureParameterName.TextureWrapT,
@@ -76,6 +79,11 @@ namespace AGame.Src.OGL {
 		public Texture(TextureTarget Target) {
 			ID = GL.GenTexture();
 			this.Target = Target;
+
+			if (ErrorTexture == null) {
+				ErrorTexture = this;
+				ErrorTexture = Texture.FromFile("Textures/error.png");
+			}
 		}
 
 		public static Texture FromFile(string Path, Texture.FilterMode FMode = FilterMode.LinearMipmapLinear) {
@@ -85,7 +93,7 @@ namespace AGame.Src.OGL {
 			Atlas.Wrapping(Texture.Wrap.Y, Texture.WrapMode.Repeat);
 			Atlas.Filtering(Texture.Filter.DownScaled, FMode);
 			Atlas.Filtering(Texture.Filter.UpScaled, FMode);
-			Atlas.Load(Bitmap.FromFile(Path));
+			Atlas.Load(new Bitmap(FSys.LoadToMemory(Path)));
 			Atlas.GenerateMipmap();
 			Atlas.Unbind();
 			return Atlas;
@@ -107,6 +115,7 @@ namespace AGame.Src.OGL {
 		public override void Unbind() {
 			GL.BindTexture(Target, 0);
 			GL.ActiveTexture(TextureUnit.Texture0);
+			ErrorTexture.Bind();
 		}
 
 		public void GenerateMipmap() {

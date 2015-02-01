@@ -7,12 +7,10 @@ vec4 Lighting(vec4 Ambient, vec3 LightPos, vec3 Norm, mat4 NormMat) {
 }
 
 void main() {
-	vec4 TexClr = texture(Texture, __uv) * Lighting(vec4(0.2, 0.2, 0.2, 1), vec3(0, 1, 0), __norm, NormMatrix);
+	vec4 TexClr = texture(Texture, __uv);
+	//TexClr = vec4(1, 1, 1, 1);
+	TexClr *= Lighting(vec4(0.2, 0.2, 0.2, 1), vec3(0, 1, 0), __norm, NormMatrix);
 
-	if (MultColor == 0)
-		Color = TexClr + ObjColor;
-	else
-		Color = TexClr * ObjColor;
-
-	//NormalColor = vec4(__norm.x * 0.5 + 0.5, __norm.y * 0.5 + 0.5, __norm.z * 0.5 + 0.5, 1.0);
+	Color = TexClr * ObjColor;
+	//Color = vec4(__norm.x * 0.5 + 0.5, __norm.y * 0.5 + 0.5, __norm.z * 0.5 + 0.5, 1.0);
 }

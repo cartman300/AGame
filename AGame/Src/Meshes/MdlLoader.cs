@@ -16,7 +16,7 @@ using OpenTK;
 namespace AGame.Src.Meshes {
 	unsafe class MdlLoader : ModelLoader {
 		static IntPtr Load(string FileName) {
-			byte[] Buffr = File.ReadAllBytes(FileName);
+			byte[] Buffr = FSys.ReadAllBytes(FileName);
 
 			void* P = Marshal.AllocHGlobal(Buffr.Length).Fill(Buffr.Length);
 			Marshal.Copy(Buffr, 0, (IntPtr)P, Buffr.Length);
@@ -60,7 +60,7 @@ namespace AGame.Src.Meshes {
 
 						string IntName = Header->Name;
 						string MatPath = "materials/models/" + IntName.Substring(0, IntName.IndexOf('/') + 1) + Txtr->Name + ".png";
-						if (!File.Exists(MatPath))
+						if (!FSys.Exists(MatPath))
 							Console.WriteLine("Not found: {0}", MatPath);
 						else
 							Msh.Tex = Texture.FromFile(MatPath);
@@ -82,6 +82,8 @@ namespace AGame.Src.Meshes {
 
 							}
 						}
+
+						Msh.Inds.Reverse();
 					}
 				}
 			}

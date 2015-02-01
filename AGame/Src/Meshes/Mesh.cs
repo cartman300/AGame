@@ -16,25 +16,49 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Input;
 
+using ProtoBuf;
+
 namespace AGame.Src.Meshes {
+	[ProtoContract]
 	struct Vertex {
+		[ProtoMember(1, IsPacked = true, OverwriteList = true)]
+		byte[] SerData {
+			get {
+				MemoryStream Str = new MemoryStream();
+				BinaryWriter SW = new BinaryWriter(Str);
+				SW.Write(Position);
+				SW.Write(Normal);
+				SW.Write(UV);
+				return Str.ToArray();
+			}
+			set {
+				BinaryReader SR = new BinaryReader(new MemoryStream(value));
+				Position = SR.ReadVector3();
+				Normal = SR.ReadVector3();
+				UV = SR.ReadVector2();
+			}
+		}
+
 		public Vector3 Position;
 		public Vector3 Normal;
 		public Vector2 UV;
+
+		public Vertex(Vector3 Position)
+			: this(Position, Vector3.Zero) {
+		}
+
+		public Vertex(Vector3 Position, Vector3 Normal)
+			: this(Position, Normal, Vector2.Zero) {
+		}
 
 		public Vertex(Vector3 Position, Vector3 Normal, Vector2 UV) {
 			this.Position = Position;
 			this.Normal = Normal;
 			this.UV = UV;
 		}
-
-		public Vertex(Vector3 Position) {
-			this.Position = Position;
-			this.Normal = Vector3.Zero;
-			this.UV = Vector2.Zero;
-		}
 	}
 
+	[ProtoContract]
 	class Mesh {
 		public static uint[] Triangulate(uint A, uint B, uint C, uint D, bool CW = true) {
 			uint[] Ret = new uint[] { A, B, C, C, D, A };
@@ -64,12 +88,47 @@ namespace AGame.Src.Meshes {
 			return Cuboid;
 		}
 
+		[ProtoMember(1)]
 		public Vertex[] Verts;
+		[ProtoMember(2)]
 		public List<uint> Inds;
-
+		[ProtoMember(3, AsReference = true)]
 		public Model ModelParent;
+		[ProtoMember(4, IsPacked = true, OverwriteList = true)]
+		byte[] SerData {
+			get {
+				MemoryStream Str = new MemoryStream();
+				BinaryWriter SW = new BinaryWriter(Str);
+				SW.Write(Color);
+				SW.Write(Position);
+				SW.Write(Scale);
+				SW.Write(Rotation);
+				return Str.ToArray();
+			}
+			set {
+				BinaryReader SR = new BinaryReader(new MemoryStream(value));
+				Color = SR.ReadColor4();
+				Position = SR.ReadVector3();
+				Scale = SR.ReadVector3();
+				Rotation = SR.ReadQuaternion();
+			}
+		}
 
-		public Mesh(int Len, bool Transparent = false) {
+		public Color4 Color;
+		public Vector3 Position;
+		public Vector3 Scale;
+		public Quaternion Rotation;
+		[ProtoMember(5)]
+		public bool IsTransparent;
+
+		public Mesh() {
+			Scale = new Vector3(1, 1, 1);
+			Position = Vector3.Zero;
+			Color = Color4.White;
+		}
+
+		public Mesh(int Len, bool Transparent = false)
+			: this() {
 			Verts = new Vertex[Len];
 			Inds = new List<uint>();
 			IsTransparent = Transparent;
@@ -84,12 +143,9 @@ namespace AGame.Src.Meshes {
 
 		public VAO MeshVAO;
 		public Texture Tex;
-		public bool IsTransparent;
 
 		public void GLInit() {
 			//Unroll();
-			Inds.Reverse();
-
 			MeshVAO = new VAO(PrimitiveType.Triangles);
 			Bind();
 
@@ -133,8 +189,9 @@ namespace AGame.Src.Meshes {
 			if (Tex != null)
 				Tex.Bind();
 			Bind();
-			S.Use(ModelParent.Position, ModelParent.Rotation, ModelParent.Scale,
-				ModelParent.Color, ModelParent.MultiplyColor, () => MeshVAO.DrawElements(Inds.Count));
+			S.Use(Matrix4.CreateScale(ModelParent.Scale * Scale) * Matrix4.CreateFromQuaternion(ModelParent.Rotation + Rotation) *
+				Matrix4.CreateTranslation((ModelParent.Scale * ModelParent.Position) + Position),
+				ModelParent.Color.Mult(Color), () => MeshVAO.DrawElements(Inds.Count));
 			Unbind();
 			if (Tex != null)
 				Tex.Unbind();

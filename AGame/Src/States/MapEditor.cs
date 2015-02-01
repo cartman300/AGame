@@ -21,20 +21,33 @@ using AGame.Src.Meshes;
 
 namespace AGame.Src.States {
 	class MapEditor : State {
-		Model Missile, Missile2, Dice;
+		Model Missile, Missile2;
+		static Model Map;
 
 		public MapEditor() {
+			/*Dice = Engine.Game.CreateModel("models/cube/cube_96x96x96.mdl")[0];
+			Dice.Scale = new Vector3(0.20833333333f);
+			Dice.GLInit(Engine.Generic3D);*/
+
 			Missile = Engine.Game.CreateModel("models/missile/missile3.mdl")[0];
 			Missile.GLInit(Engine.Generic3D);
 
-			Dice = Engine.Game.CreateModel("models/cube/cube_96x96x96.mdl")[0];
-			Dice.Scale = 0.20833333333f;
-			Dice.GLInit(Engine.Generic3D);
-
+			/*Missile2 = Model.FromStream(FSys.LoadToMemory("missile.wat"));
+			for (int i = 0; i < Missile.Meshes.Count; i++)
+				Missile2.Meshes[i].Tex = Missile.Meshes[i].Tex;*/
 			Missile2 = Engine.Game.CreateModel("models/missile/missile3.mdl")[0];
 			Missile2.Position = new Vector3(0, 0, 50);
 			Missile2.Rotation = Quaternion.FromAxisAngle(Vector3.UnitZ, MathHelper.PiOver2);
 			Missile2.GLInit(Engine.Generic3D);
+
+			if (Map == null) {
+				Map = Engine.Game.CreateModel("Packs/akumaq3dm8.pk3")[0];
+				//Map = Engine.Game.CreateModel("Cabin/WoodenCabinObj.obj")[0];
+				//Map.Position = new Vector3(-100, 0, 0);
+
+				//Map.Serialize(FSys.Create("map.wat"));
+				Map.GLInit(Engine.Generic3D);
+			}
 		}
 
 		public override void Activate(State OldState) {
@@ -98,6 +111,9 @@ namespace AGame.Src.States {
 
 			Missile.RenderOpaque();
 			Missile2.RenderOpaque();
+
+			if (Map != null)
+				Map.RenderOpaque();
 		}
 	}
 }

@@ -16,7 +16,7 @@ namespace AGame.Src.OGL {
 		public string ShaderFile;
 
 		public static string GetShaderPath(string ShaderName) {
-			return "Data/Shaders/" + ShaderName + ".glsl";
+			return "Shaders/" + ShaderName + ".glsl";
 		}
 
 		void Load(ShaderType SType, string Source, string Path) {
@@ -31,7 +31,7 @@ namespace AGame.Src.OGL {
 		}
 
 		void Load(ShaderType SType, string Path) {
-			Load(SType, File.ReadAllText(Path), Path);
+			Load(SType, FSys.ReadAllText(Path), Path);
 		}
 
 		public Shader(ShaderType SType, string Source, string Path) {

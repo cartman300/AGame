@@ -35,7 +35,7 @@ namespace AGame.Src.States {
 		bool MenuDirty;
 
 		public Menu() {
-			Flib.Font MenuFont = new Flib.Font("Data/Fonts/Vera.ttf", 18);
+			Flib.Font MenuFont = new Flib.Font(FSys.ReadAllBytes("Fonts/Vera.ttf"), 18);
 			MenuText = new ColoredText(MenuFont, 80, 100);
 
 			SelectedEntry = 0;
@@ -83,9 +83,10 @@ namespace AGame.Src.States {
 
 		public override void RenderGUI(float T) {
 			// TODO: Remove hardcoded position
-			Engine.Text2D.Use(new Vector3(100, 200, 0), Quaternion.FromAxisAngle(Vector3.UnitZ,
-				(float)Math.Sin(Engine.Game.Time / 7) * 0.05f),
-				1.0f, Color4.White, true, MenuText.Render);
+			Matrix4 MRot = Matrix4.CreateFromQuaternion(Quaternion.FromAxisAngle(Vector3.UnitZ,
+				(float)Math.Sin(Engine.Game.Time / 7) * 0.05f));
+			Matrix4 MTrans = Matrix4.CreateTranslation(100, 200, 0);
+			Engine.Text2D.Use(MTrans * MRot, Color4.White, MenuText.Render);
 		}
 	}
 }

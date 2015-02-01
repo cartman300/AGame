@@ -60,7 +60,7 @@ namespace AGame.Src {
 
 			ModelLoaders = new List<ModelLoader>();
 			ModelLoaders.Add(new MdlLoader());
-			ModelLoaders.Add(new ObjLoader());
+			ModelLoaders.Add(new AssimpLoader());
 
 			MouseEnabled = true;
 
@@ -95,8 +95,8 @@ namespace AGame.Src {
 		ShaderAssembler CreateShader() {
 			ShaderAssembler ProgAsm = new ShaderAssembler();
 			return ProgAsm.AddUniform("mat4", "Matrix", "ModelMatrix", "NormMatrix")
-				.AddUniform("sampler2D", "Texture"/*, "NormalTexture"*/) .AddUniform("int", "MultColor")
-				.AddUniform("vec4", "ObjColor").AddUniform("vec2", "Resolution").AddUniform("float", "Time");
+				.AddUniform("sampler2D", "Texture"/*, "NormalTexture"*/).AddUniform("vec4", "ObjColor")
+				.AddUniform("vec2", "Resolution").AddUniform("float", "Time");
 		}
 
 		ShaderProgram Finalize(ShaderAssembler SAsm) {
@@ -173,11 +173,13 @@ namespace AGame.Src {
 			GL.Enable(EnableCap.Blend);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-			GL.Enable(EnableCap.CullFace);
-			GL.CullFace(CullFaceMode.Back);
+			/*GL.Enable(EnableCap.CullFace);
+			GL.CullFace(CullFaceMode.Back);*/
 
 			GL.Enable(EnableCap.DepthTest);
 			GL.DepthFunc(DepthFunction.Less);
+
+			GL.PolygonMode(MaterialFace.Back, PolygonMode.Line);
 
 			Generic2D = Finalize(CreateShader().AddInput("vec2", "pos", "uv")
 				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
@@ -190,8 +192,8 @@ namespace AGame.Src {
 				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
 			Generic3D = Finalize(CreateShader().AddInput("vec3", "pos", "norm").AddInput("vec2", "uv")
-				.AddShader(ShaderType.VertexShader, ShaderType.FragmentShader, "Generic.vertex")
-				//.AddShader(ShaderType.GeometryShader, ShaderType.FragmentShader, "Explode.geometry")
+				.AddShader(ShaderType.VertexShader, ShaderType.GeometryShader, "Generic.vertex")
+				.AddShader(ShaderType.GeometryShader, ShaderType.FragmentShader, "Empty.geometry")
 				.AddShader(ShaderType.FragmentShader, null, "Generic3D.fragment")
 				.AddShader(ShaderType.VertexShader, null, "Parts/utils", true));
 
@@ -215,7 +217,7 @@ namespace AGame.Src {
 
 			float FOV = 90f * (float)Math.PI / 180f;
 			Generic3D.Cam = new Camera();
-			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Resolution.X / Resolution.Y, 1, 1000);
+			Generic3D.Cam.Projection = Matrix4.CreatePerspectiveFieldOfView(FOV, (float)Resolution.X / Resolution.Y, 1, 10000);
 
 			Scr3D = new RenderTarget((int)Resolution.X, (int)Resolution.Y, true);
 			ScrFull = new RenderTarget((int)Resolution.X, (int)Resolution.Y);

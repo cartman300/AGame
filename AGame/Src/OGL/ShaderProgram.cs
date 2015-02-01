@@ -91,7 +91,7 @@ namespace AGame.Src.OGL {
 					Src.Append(CreateInput(T, Next, Inputs[i].Item1, Inputs[i].Item2));
 			}
 
-			Src.Append(File.ReadAllText(Shader.GetShaderPath(ShaderName)));
+			Src.Append(FSys.ReadAllText(Shader.GetShaderPath(ShaderName)));
 			if (!IsPart && Next.HasValue)
 				Src.Replace("///MAPPINGS", GetMappings(T, Next.Value));
 
@@ -114,7 +114,7 @@ namespace AGame.Src.OGL {
 		const string UniformMatrix = "Matrix";
 		const string UniformModelMatrix = "ModelMatrix";
 		const string UniformNormMatrix = "NormMatrix";
-		const string UniformMultColor = "MultColor";
+		//const string UniformMultColor = "MultColor";
 		const string UniformColor = "ObjColor";
 		const string UniformResolution = "Resolution";
 		const string UniformTexture = "Texture";
@@ -161,11 +161,11 @@ namespace AGame.Src.OGL {
 			}
 		}
 
-		public bool MultiplyColor {
+		/*public bool MultiplyColor {
 			set {
 				SetUniform(UniformMultColor, value);
 			}
-		}
+		}*/
 
 		public Color4 Color {
 			set {
@@ -248,15 +248,15 @@ namespace AGame.Src.OGL {
 			}
 		}
 
-		public void Use(Vector3 Pos, Quaternion Rot, float Scale, Color4 Clr, bool MultClr, Action A) {
-			Modelview = Matrix4.CreateScale(Scale) * Matrix4.CreateFromQuaternion(Rot) * Matrix4.CreateTranslation(Pos);
+		public void Use(Matrix4 MView, Color4 Clr, Action A) {
+			Modelview = MView;
 			Bind();
 			Color = Clr;
-			MultiplyColor = MultClr;
+			//MultiplyColor = MultClr;
 			A();
 			Modelview = Matrix4.Identity;
 			Color = Color4.White;
-			MultiplyColor = true;
+			//MultiplyColor = true;
 			Unbind();
 		}
 

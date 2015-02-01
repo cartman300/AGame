@@ -26,18 +26,12 @@ namespace AGame.Src {
 	class Program {
 		static Mutex ProcessMutex;
 
-		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-		static extern bool SetDllDirectory(string path);
-
 		static Program() {
-			if (!SetDllDirectory("bin"))
-				throw new Exception("Can not set dll directory");
-
 			AppDomain.CurrentDomain.AssemblyResolve += (S, Args) => {
-				string Pth = Path.GetFullPath("bin/" + new AssemblyName(Args.Name).Name + ".dll");
-				if (!File.Exists(Pth))
+				string Pth = "bin/" + new AssemblyName(Args.Name).Name + ".dll";
+				if (!FSys.Exists(Pth))
 					return null;
-				return Assembly.LoadFile(Pth);
+				return Assembly.Load(FSys.ReadAllBytes(Pth));
 			};
 		}
 
@@ -52,6 +46,15 @@ namespace AGame.Src {
 				return;
 			}
 
+			if (Directory.Exists("Packs")) {
+				string[] MountExts = SharpFileSystem.SevenZip.SeamlessSevenZipFileSystem.ArchiveExtensions.ToArray();
+				string[] PackFiles = Directory.GetFiles("Packs", "*", SearchOption.AllDirectories);
+				for (int i = 0; i < PackFiles.Length; i++) {
+					string PackFile = PackFiles[i];
+					if (MountExts.Contains(Path.GetExtension(PackFile)))
+						FSys.Mount(PackFile);
+				}
+			}
 
 			ToolkitOptions TOpt = new ToolkitOptions();
 			TOpt.Backend = PlatformBackend.PreferNative;
