@@ -157,10 +157,10 @@
     <None Include="Packs\Cube.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Packs\Fonts.zip">
+    <None Include="Packs\Missile.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Packs\Missile.zip">
+    <None Include="Packs\VeraFont.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="SharpFont.dll.config">

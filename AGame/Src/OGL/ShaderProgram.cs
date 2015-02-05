@@ -276,42 +276,49 @@ namespace AGame.Src.OGL {
 		public void SetUniform(string Name, int Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.ProgramUniform1(ID, Loc, Val);
+				//GL.ProgramUniform1(ID, Loc, Val);
+				GL.Uniform1(Loc, Val);
 		}
 
 		public void SetUniform(string Name, Vector2 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.ProgramUniform2(ID, Loc, Val.X, Val.Y);
+				//GL.ProgramUniform2(ID, Loc, Val.X, Val.Y);
+				GL.Uniform2(Loc, Val);
 		}
 
 		public void SetUniform(string Name, Vector3 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.ProgramUniform3(ID, Loc, Val.X, Val.Y, Val.Z);
+				//GL.ProgramUniform3(ID, Loc, Val.X, Val.Y, Val.Z);
+				GL.Uniform3(Loc, Val);
 		}
 
 		public void SetUniform(string Name, float Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.ProgramUniform1(ID, Loc, Val);
+				//GL.ProgramUniform1(ID, Loc, Val);
+				GL.Uniform1(Loc, Val);
 		}
 
 		public void SetUniform(string Name, Vector4 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
-				GL.ProgramUniform4(ID, Loc, Val.X, Val.Y, Val.Z, Val.W);
+				//GL.ProgramUniform4(ID, Loc, Val.X, Val.Y, Val.Z, Val.W);
+				GL.Uniform4(Loc, Val);
 		}
 
 		public void SetUniform(string Name, Color4 Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
+				//GL.ProgramUniform4(ID, Loc, Val.R, Val.G, Val.B, Val.A);
 				GL.Uniform4(Loc, Val);
 		}
 
 		public void SetUniform(string Name, bool Val) {
 			int Loc = GetUniformLocation(Name);
 			if (Loc >= 0)
+				//GL.ProgramUniform1(ID, Loc, Val ? 1 : 0);
 				GL.Uniform1(Loc, Val ? 1 : 0);
 		}
 
